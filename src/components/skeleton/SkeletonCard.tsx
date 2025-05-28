@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const SkeletonCard = () => (
   <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 shadow-sm animate-pulse">

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Importando o Link do react-router-dom
 

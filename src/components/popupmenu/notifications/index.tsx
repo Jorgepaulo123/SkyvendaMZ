@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { NotificationItem } from './NotificationItem';
 import { Bell } from 'lucide-react';
 
