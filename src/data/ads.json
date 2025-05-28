@@ -1,0 +1,39 @@
+{
+  "ads": [
+    {
+      "id": 1,
+      "title": "Oferta Especial: Smartphone XYZ",
+      "description": "Aproveite 10% de desconto no Smartphone XYZ!",
+      "slug": "smartphone-xyz",
+      "image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": 2,
+      "title": "Novos Lançamentos: Laptop ABC",
+      "description": "Confira o Laptop ABC com tecnologia de ponta!",
+      "slug": "laptop-abc",
+      "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": 3,
+      "title": "Fones de Ouvido QWE com Desconto",
+      "description": "Obtenha os Fones de Ouvido QWE com 15% de desconto!",
+      "slug": "fones-de-ouvido-qwe",
+      "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": 4,
+      "title": "Promoção do Smartwatch 123",
+      "description": "Smartwatch 123 com monitor cardíaco em oferta!",
+      "slug": "smartwatch-123",
+      "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": 5,
+      "title": "Tablet Pro com Frete Grátis",
+      "description": "Compre o Tablet Pro e ganhe frete grátis!",
+      "slug": "tablet-pro",
+      "image": "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+import React from 'react'
+import Header from '../components/header'
+import SideBar from '../components/sidebars'
+import Header2 from '../components/header/header2'
+import { useAuth } from '../context/AuthContext'
+import { useToast } from '../hooks/use-toast'
+
+export default function Layout({children, header=true}) {
+
+  return (
+    <div className='w-full h-[100vh] flex relative bg-white'>
+      <SideBar/>
+      <div className="flex flex-1 flex-col bg-[#f8f8ff]">
+        {header && <Header />}
+        <div className="flex flex-col flex-1 overflow-y-auto">
+          {children}
+        </div>
+      </div> 
+    </div>
+  )
+}
