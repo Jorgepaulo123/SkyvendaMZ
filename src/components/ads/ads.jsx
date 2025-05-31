@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { base_url } from '../../api/api';
-import api from '../../api/api';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ProductItemSkeleton = () => (
   <div className="bg-white/50 rounded-lg overflow-hidden shadow-sm p-3 flex-1">
@@ -14,22 +15,24 @@ const ProductItemSkeleton = () => (
 );
 
 const ProductItem = memo(({ produto, anuncio }) => (
-  <div className="product-item bg-white rounded-lg h-[181px] md:h-auto overflow-hidden shadow-sm hover:shadow-md transition-all p-3 flex-1 animate-fade-slide-in opacity-0">
-    <div className="relative aspect-square bg-gray-50 rounded">
-      <img 
-        src={`${base_url}/produto/${produto.capa}`} 
-        alt={produto.nome} 
-        className="w-full h-full object-cover"
-        onError={(e) => e.target.src = `${base_url}/default.png`} 
-      />
-    </div>
-    <div className="p-2">
-      <h3 className="text-sm text-gray-700 line-clamp-2 mb-1">{produto.nome}</h3>
-      <div className="flex items-baseline gap-1">
-        <span className="text-xs md:text-base font-bold">{produto.preco} MT</span>
+  <Link to={`/post/${produto.slug}`} className="no-underline">
+    <div className="product-item bg-white rounded-lg h-[181px] md:h-auto overflow-hidden shadow-sm hover:shadow-md transition-all p-3 flex-1 animate-fade-slide-in opacity-0">
+      <div className="relative aspect-square bg-gray-50 rounded">
+        <img 
+          src={produto.capa} 
+          alt={produto.nome} 
+          className="w-full h-full object-cover"
+          onError={(e) => e.target.src = `${base_url}/default.png`} 
+        />
+      </div>
+      <div className="p-2">
+        <h3 className="text-sm text-gray-700 line-clamp-2 mb-1">{produto.nome}</h3>
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs md:text-base font-bold">{produto.preco} MT</span>
+        </div>
       </div>
     </div>
-  </div>
+  </Link>
 ));
 
 const AdSectionSkeleton = () => (
@@ -86,25 +89,32 @@ function AdsMore() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/produtos/anuncios/').then(res => {
-      const ads = res.data;
-      
-      // Organize ads by type
-      const organizedAds = ads.reduce((acc, ad) => {
-        const type = ad.anuncio.tipo_anuncio;
-        if (!acc[type]) {
-          acc[type] = [];
-        }
-        acc[type].push(ad);
-        return acc;
-      }, {});
-
-      setAdvertisements(organizedAds);
-      setIsLoading(false);
-    }).catch(err => {
-      console.error('Error fetching advertisements:', err);
-      setIsLoading(false);
-    });
+    // Buscar ofertas diárias do endpoint específico
+    axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10')
+      .then(response => {
+        setAdvertisements(prev => ({
+          ...prev,
+          ofertas_diarias: response.data
+        }));
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar ofertas diárias:', error);
+        setIsLoading(false);
+      });
+    
+    // Você pode adicionar mais chamadas para outros tipos de anúncios aqui
+    // Por exemplo:
+    axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=melhores_boladas&limit=10')
+      .then(response => {
+        setAdvertisements(prev => ({
+          ...prev,
+          melhores_boladas: response.data
+        }));
+      })
+      .catch(error => {
+        console.error('Erro ao buscar melhores boladas:', error);
+      });
   }, []);
 
   if (isLoading) {

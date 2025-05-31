@@ -8,12 +8,14 @@ import { AuthContext, useAuth } from '../../context/AuthContext'
 import PublishProductCard from '../PublishProduct'
 import { HomeContext } from '../../context/HomeContext'
 import { useWebSocket } from '../../context/websoketContext'
+import { Notifications } from '../popupmenu/notifications'
 export default function Header() {
     const [cat, setCat] = useState('')
     const [search, setSearch] = useState('')
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [showPostDialog,setShowPostDialog]= useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const {newMessage,setNewMessage,newNotification,setNewNotification}=useWebSocket()
     const {isAuthenticated}=useAuth()
     const navigate = useNavigate();
@@ -87,11 +89,18 @@ export default function Header() {
                                 </div>
                             </Link>
 
-                            <div className="relative  h-[30px] flex items-center justify-center">
-                                <Bell size={30} className='text-gray-700  hover:text-indigo-600' />
-                                <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
-                                    {newNotification != 0 && (<span>{newNotification}</span>)}
+                            <div className="relative h-[30px] flex items-center justify-center">
+                                <div onClick={() => setShowNotifications(!showNotifications)} className="cursor-pointer">
+                                    <Bell size={30} className='text-gray-700 hover:text-indigo-600' />
+                                    <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
+                                        {newNotification != 0 && (<span>{newNotification}</span>)}
+                                    </div>
                                 </div>
+                                {showNotifications && (
+                                    <div className="absolute top-full right-0 mt-2 z-50">
+                                        <Notifications onClose={() => setShowNotifications(false)} />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="relative  h-[30px] flex items-center justify-center">
