@@ -1,4 +1,4 @@
-import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star } from 'lucide-react';
+import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star, FileText, Users } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +24,10 @@ export default function Profile() {
     const [products,setProducts]=useState([])
     const [loadingProducts,setLoadingproducts]=useState(true)
     const [isPublic,setIsPublic]=useState(false)
+    const [publicacoes, setPublicacoes] = useState([])
+    const [loadingPublicacoes, setLoadingPublicacoes] = useState(true)
+    const [seguidores, setSeguidores] = useState([])
+    const [loadingSeguidores, setLoadingSeguidores] = useState(true)
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
     const [showTooltip, setShowTooltip] = useState(false);
     const [openAvatarMenu,setOpenAvatarMenu]=useState(false);
@@ -151,6 +155,32 @@ export default function Profile() {
                                     media_estrelas: ratingResponse.data.media_estrelas || 0,
                                     total_avaliacoes: ratingResponse.data.total_avaliacoes || 0
                                 });
+                                
+                                // Buscar publicações do usuário
+                                try {
+                                    const publicacoesResponse = await axios.get(`https://skyvendamz-1.onrender.com/usuario/publicacoes/?usuario_id=${response.data.id}&page=1&per_page=10`, {
+                                        headers: headers
+                                    });
+                                    console.log('Publicações do usuário:', publicacoesResponse.data);
+                                    setPublicacoes(publicacoesResponse.data.items || []);
+                                } catch (error) {
+                                    console.error('Erro ao buscar publicações do usuário:', error);
+                                } finally {
+                                    setLoadingPublicacoes(false);
+                                }
+                                
+                                // Buscar seguidores do usuário
+                                try {
+                                    const seguidoresResponse = await axios.get(`https://skyvendamz-1.onrender.com/usuario/usuarios/${response.data.id}/seguindo`, {
+                                        headers: headers
+                                    });
+                                    console.log('Seguidores do usuário:', seguidoresResponse.data);
+                                    setSeguidores(seguidoresResponse.data.seguindo || []);
+                                } catch (error) {
+                                    console.error('Erro ao buscar seguidores do usuário:', error);
+                                } finally {
+                                    setLoadingSeguidores(false);
+                                }
                             } catch (error) {
                                 console.error('Erro ao buscar avaliações do usuário:', error);
                             }
@@ -363,8 +393,8 @@ export default function Profile() {
                                     <div className="flex flex-wrap gap-2 sm:gap-8 justify-center items-center overflow-x-auto">
                                     <Link  to={`/${username}`} className={`uppercase transition-all duration-300 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-t-2  border-t-gray-900 "}`}><Grid className="w-4 h-4 sm:w-5 sm:h-5"/>Produtos</Link>
                                     <Link to={`/${username}/orders`} className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/orders` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><ClipboardList className="w-4 h-4 sm:w-5 sm:h-5"/>Pedidos</Link>
-                                    <Link  to={`/${username}/friends`}className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/friends` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><User2 className="w-4 h-4 sm:w-5 sm:h-5"/>Amigos</Link>
-                                    <Link to={`/${username}/ads`} className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/ads` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Megaphone className="w-4 h-4 sm:w-5 sm:h-5"/>Anúncios</Link>
+                                    <Link  to={`/${username}/publicacoes`}className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><FileText className="w-4 h-4 sm:w-5 sm:h-5"/>Publicações</Link>
+                                    <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Users className="w-4 h-4 sm:w-5 sm:h-5"/>Seguidores</Link>
                                     </div>
                                     {/* tabs content body */}
                                     <div className="flex-1">
@@ -587,8 +617,8 @@ export default function Profile() {
                                     <div className="flex-1 gap-4">
                                         <div className="flex gap-8 justify-center items-center">
                                         <Link  to={`/${username}`} className={`uppercase transition-all duration-300 gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-t-2  border-t-gray-900 "}`}><Grid/>Produtos</Link>
-                                        <Link  to={`/${username}/friends`}className={`uppercase transition-all duration-100 gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/friends` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><User2/>Amigos</Link>
-                                        <Link to={`/${username}/ads`} className={`uppercase transition-all duration-100  gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/ads` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Megaphone/>Anúncios</Link>
+                                        <Link  to={`/${username}/publicacoes`}className={`uppercase transition-all duration-100 gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><FileText/>Publicações</Link>
+                                        <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100  gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Users/>Seguidores</Link>
                                         </div>
                                         {/* tabs content body */}
                                         <div className="flex-1">
@@ -650,6 +680,114 @@ export default function Profile() {
                                                    </> 
                                                 )}
                                                 </div> 
+                                            )}
+                                            
+                                            {tabSelected==`/${username}/publicacoes` &&(
+                                                <div className="flex flex-col gap-4">
+                                                    {loadingPublicacoes ? (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                                            Carregando publicações...
+                                                        </div>
+                                                    ) : publicacoes.length === 0 ? (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            Nenhuma publicação encontrada
+                                                        </div>
+                                                    ) : (
+                                                        publicacoes.map((publicacao) => (
+                                                            <div key={publicacao.id} className="bg-white rounded-lg shadow-md p-4">
+                                                                <div className="flex items-center gap-3 mb-3">
+                                                                    <img 
+                                                                        src={publicacao.publicador.foto_perfil || 'https://via.placeholder.com/40'} 
+                                                                        alt={publicacao.publicador.nome}
+                                                                        className="w-10 h-10 rounded-full object-cover"
+                                                                    />
+                                                                    <div>
+                                                                        <h3 className="font-semibold">{publicacao.publicador.nome}</h3>
+                                                                        <p className="text-xs text-gray-500">{new Date(publicacao.data_criacao || new Date()).toLocaleString('pt-BR')}</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <p className="text-gray-800 mb-3">{publicacao.conteudo}</p>
+                                                                
+                                                                <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Heart className={`w-5 h-5 ${publicacao.deu_like ? 'text-red-500 fill-red-500' : ''}`} />
+                                                                        <span>{publicacao.total_likes || 0} curtidas</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <MessageCircle className="w-5 h-5" />
+                                                                        <span>{publicacao.total_comentarios || 0} comentários</span>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {publicacao.comentarios && publicacao.comentarios.length > 0 && (
+                                                                    <div className="mt-3 border-t pt-3">
+                                                                        <h4 className="text-sm font-semibold mb-2">Comentários</h4>
+                                                                        {publicacao.comentarios.map((comentario) => (
+                                                                            <div key={comentario.id} className="flex gap-2 mb-2">
+                                                                                <img 
+                                                                                    src={comentario.usuario.foto_perfil || 'https://via.placeholder.com/30'} 
+                                                                                    alt={comentario.usuario.nome}
+                                                                                    className="w-7 h-7 rounded-full object-cover"
+                                                                                />
+                                                                                <div className="bg-gray-100 rounded-lg p-2 flex-1">
+                                                                                    <div className="flex justify-between">
+                                                                                        <h5 className="text-xs font-semibold">{comentario.usuario.nome}</h5>
+                                                                                        <span className="text-xs text-gray-500">{new Date(comentario.data_criacao).toLocaleString('pt-BR', {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'})}</span>
+                                                                                    </div>
+                                                                                    <p className="text-sm">{comentario.conteudo}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            )}
+                                            
+                                            {tabSelected==`/${username}/seguidores` &&(
+                                                <div className="flex flex-col gap-4">
+                                                    {loadingSeguidores ? (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                                            Carregando seguidores...
+                                                        </div>
+                                                    ) : seguidores.length === 0 ? (
+                                                        <div className="p-6 text-center text-gray-500">
+                                                            Nenhum seguidor encontrado
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            {seguidores.map((seguidor) => (
+                                                                <div key={seguidor.id} className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3">
+                                                                    <img 
+                                                                        src={seguidor.foto_perfil || 'https://via.placeholder.com/50'} 
+                                                                        alt={seguidor.nome}
+                                                                        className="w-12 h-12 rounded-full object-cover"
+                                                                    />
+                                                                    <div className="flex-1">
+                                                                        <h3 className="font-semibold">{seguidor.nome}</h3>
+                                                                        <p className="text-sm text-gray-500">@{seguidor.username}</p>
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <button 
+                                                                            className="bg-indigo-100 text-indigo-600 p-2 rounded-full hover:bg-indigo-200"
+                                                                            onClick={() => handleOpenChat(seguidor)}
+                                                                        >
+                                                                            <MessageCircle className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button className="bg-gray-100 text-gray-600 p-2 rounded-full hover:bg-gray-200">
+                                                                            <UserPlus className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </div>

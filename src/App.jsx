@@ -126,9 +126,9 @@ function App() {
                   <Route path="/pedidos" element={<PrivateRoute><Layout><Layout2><Pedidos/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/produtos" element={<PrivateRoute><Layout><Layout2><MyProducts/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/ads" element={<PrivateRoute><Layout><Layout2><p>aqui vem anucios meus</p></Layout2></Layout></PrivateRoute>} />
-                  <Route path="/:username/ads" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
+                  <Route path="/:username/seguidores" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/:username/orders" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
-                  <Route path="/:username/friends" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
+                  <Route path="/:username/publicacoes" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/accounts/edit/" element={<PrivateRoute><Layout header={false}><SettingLayout><Edit/></SettingLayout></Layout></PrivateRoute>} />
                   <Route path="/accounts/notifications/" element={<PrivateRoute><Layout header={false}><SettingLayout><Notificacoes/></SettingLayout></Layout></PrivateRoute>} />
                   <Route path="/accounts/privacy/" element={<PrivateRoute><Layout header={false}><SettingLayout><Privacy/></SettingLayout></Layout></PrivateRoute>} />

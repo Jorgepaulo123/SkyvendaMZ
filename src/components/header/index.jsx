@@ -6,9 +6,10 @@ import { FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext, useAuth } from '../../context/AuthContext'
 import PublishProductCard from '../PublishProduct'
-import { HomeContext } from '../../context/HomeContext'
-import { useWebSocket } from '../../context/websoketContext'
-import { Notifications } from '../popupmenu/notifications'
+import { HomeContext } from '../../context/HomeContext';
+// Usando o WebSocketProvider atualizado em vez do contexto antigo
+import { useWebSocket } from '../websocket/WebSocketProvider';
+import { Notifications } from '../popupmenu/notifications';
 export default function Header() {
     const [cat, setCat] = useState('')
     const [search, setSearch] = useState('')
@@ -16,7 +17,12 @@ export default function Header() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [showPostDialog,setShowPostDialog]= useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-    const {newMessage,setNewMessage,newNotification,setNewNotification}=useWebSocket()
+    // Usando o hook useWebSocket para obter a contagem de notificações
+    const { notificationCount, resetNotificationCount } = useWebSocket();
+    
+    // Forçar o valor para zero se não for um número válido ou for menor que zero
+    const safeCount = (!notificationCount || isNaN(notificationCount) || notificationCount < 0) ? 0 : notificationCount;
+    
     const {isAuthenticated}=useAuth()
     const navigate = useNavigate();
     const location = useLocation();
@@ -84,17 +90,21 @@ export default function Header() {
                         <div className="flex justify-between flex-1">
                             <Link  to='/chat' className="relative  h-[30px] flex items-center justify-center">
                                 <MessageCircle size={30} className='text-gray-700  hover:text-indigo-600' />
-                                <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
-                                    {newMessage != 0 && (<span>{newMessage}</span>)}
-                                </div>
+                                {/* Ponto de notificação do chat removido */}
                             </Link>
 
                             <div className="relative h-[30px] flex items-center justify-center">
-                                <div onClick={() => setShowNotifications(!showNotifications)} className="cursor-pointer">
+                                <div onClick={() => {
+                                    setShowNotifications(!showNotifications);
+                                    // Resetar contador de notificações ao clicar no sino
+                                    resetNotificationCount();
+                                }} className="cursor-pointer">
                                     <Bell size={30} className='text-gray-700 hover:text-indigo-600' />
-                                    <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
-                                        {newNotification != 0 && (<span>{newNotification}</span>)}
-                                    </div>
+                                    {safeCount > 0 && (
+                                        <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
+                                            <span>{safeCount > 99 ? '99+' : safeCount}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 {showNotifications && (
                                     <div className="absolute top-full right-0 mt-2 z-50">
@@ -105,9 +115,7 @@ export default function Header() {
 
                             <div className="relative  h-[30px] flex items-center justify-center">
                                 <ShoppingCart size={30} className='text-gray-700  hover:text-indigo-600' />
-                                <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 w-[15px] h-[15px] flex items-center">
-                                    <span>1</span>
-                                </div>
+                                {/* Ponto de notificação do carrinho removido */}
                             </div>
                         </div>
                     </div>
@@ -188,10 +196,7 @@ export default function Header() {
                                 size={30}
                                 fill={isActiveRoute('/chat') ? 'currentColor' : 'none'}
                             />
-                            <span className="absolute -top-1 -right-2 bg-red-500
-                 text-white text-xs rounded-full min-w-[18px] max-w-[20px] h-[18px] flex items-center justify-center">
-                                +9
-                            </span>
+                            {/* Ponto de notificação do chat removido */}
                         </Link>
                     </button>
 
@@ -206,7 +211,11 @@ export default function Header() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/notifications')}
+                        onClick={() => {
+                            navigate('/notifications');
+                            // Resetar contador de notificações ao clicar no sino
+                            resetNotificationCount();
+                        }}
                         className={`text-gray-600 relative ${isActiveRoute('/notifications') ? 'text-indigo-600' : ''
                             }`}
                     >
@@ -215,9 +224,11 @@ export default function Header() {
                                 size={30}
                                 fill={isActiveRoute('/notifications') ? 'currentColor' : 'none'}
                             />
-                            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                            <span>{newNotification !=0 && newNotification}</span>
-                            </span>
+                            {safeCount > 0 && (
+                                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
+                                    {safeCount > 99 ? '99+' : safeCount}
+                                </span>
+                            )}
                         </div>
                     </button>
 
@@ -226,9 +237,7 @@ export default function Header() {
                         className="text-gray-600 relative  mr-2"
                     >
                         <FiShoppingCart size={30} />
-                        <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[16px] h-[16px] flex items-center justify-center">
-                            3
-                        </span>
+                        {/* Ponto de notificação do carrinho removido */}
                     </button>
                 </div>
             </div>

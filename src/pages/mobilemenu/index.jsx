@@ -16,6 +16,8 @@ export default function MobileMenu() {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [orderCount, setOrderCount] = useState(0)
   const [productCount, setProductCount] = useState(0)
+  const [nhonguistas, setNhonguistas] = useState([])
+  const [loadingNhonguistas, setLoadingNhonguistas] = useState(false)
 
   useEffect(() => {
     if (!myorders?.length && token) {
@@ -60,7 +62,24 @@ export default function MobileMenu() {
     } else {
       setProductCount(myproducts?.length || 0);
     }
-  }, [token]);
+    
+    // Buscar nhonguistas e lojas
+    setLoadingNhonguistas(true);
+    if (user?.id_unico) {
+      api.get(`usuario/usuarios/lojas?skip=0&limit=5&identificador_unico=${user?.id_unico}`)
+        .then(res => {
+          setNhonguistas(res.data.usuarios || []);
+        })
+        .catch(err => {
+          console.error('Erro ao buscar nhonguistas:', err.message);
+        })
+        .finally(() => {
+          setLoadingNhonguistas(false);
+        });
+    } else {
+      setLoadingNhonguistas(false);
+    }
+  }, [token, user?.id_unico]);
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-pink-100 via-white to-red-50 max_z_index_2xl">
@@ -90,7 +109,15 @@ export default function MobileMenu() {
               <div className="bg-white rounded-lg p-4 border border-gray-200 ">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <img src={`https://skyvendamz.up.railway.app/perfil/${user.perfil}`} alt="Profile" className="w-10 h-10 rounded-full" />
+                    <img 
+                      src={user?.perfil || 'https://via.placeholder.com/40'} 
+                      alt="Foto de perfil" 
+                      className="w-10 h-10 rounded-full object-cover border border-gray-200" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/40';
+                      }}
+                    />
                     <div className="flex flex-col">
                       <span className="font-semibold">{user?.username}</span>
                       <span className="text-sm text-gray-500">{user?.email}</span>
@@ -129,21 +156,78 @@ export default function MobileMenu() {
                 )}
               </div>
 
-              {/* Create Profile Button */}
-              <Link 
-                to="/nhonguistas" 
-                className="bg-white rounded-lg p-4 border border-gray-200  flex items-center gap-3 transition-all active:scale-95 hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
+              {/* Nhonguistas e Lojas Section */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold text-gray-700">Nhonguistas e Lojas</h2>
+                  <Link to="/nhonguistas" className="text-sm text-indigo-600 hover:text-indigo-800">
+                    Ver todos
+                  </Link>
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-medium">Melhores Nhonguistas</h3>
-                  <p className="text-sm text-gray-500">Encontre os melhores vendedores</p>
-                </div>
-              </Link>
+                
+                {loadingNhonguistas ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((_, index) => (
+                      <div key={index} className="flex items-center gap-3 animate-pulse">
+                        <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : nhonguistas.length > 0 ? (
+                  <div className="space-y-4">
+                    {nhonguistas.map((nhonguista) => (
+                      <Link 
+                        key={nhonguista.id} 
+                        to={`/${nhonguista.username}`}
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <img 
+                          src={nhonguista.foto_perfil || 'https://via.placeholder.com/40'} 
+                          alt={nhonguista.name} 
+                          className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://via.placeholder.com/40';
+                          }}
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-800">{nhonguista.name}</h3>
+                          <p className="text-sm text-gray-500">@{nhonguista.username}</p>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-center text-amber-500">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                            <span className="text-sm ml-1">{nhonguista.avaliacao_media || '0.0'}</span>
+                          </div>
+                          <span className="text-xs text-gray-500">{nhonguista.seguidores || 0} seguidores</span>
+                        </div>
+                      </Link>
+                    ))}
+                    <Link 
+                      to="/nhonguistas" 
+                      className="block w-full text-center py-2 text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      Ver mais nhonguistas
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p className="text-gray-500">Nenhum nhonguista encontrado</p>
+                    <Link to="/nhonguistas" className="mt-2 inline-block text-indigo-600 hover:text-indigo-800 font-medium">
+                      Explorar nhonguistas
+                    </Link>
+                  </div>
+                )}
+              </div>
 
               {/* Menu Items Grid */}
               <div className="grid grid-cols-2 gap-4">

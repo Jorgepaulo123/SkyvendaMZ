@@ -1,5 +1,5 @@
 import React, { useEffect, useState,useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {ArrowRight, Bell, CarFront, Check, ChevronLeft, ChevronRight, ChevronRightCircle, Heart, Home, List, MapPinIcon, Menu, MessageCircle, PlusIcon, RefreshCcw, Search, ShoppingCart, User2 } from 'lucide-react'
 import { FaCaretDown, FaPlus, FaShopify } from 'react-icons/fa'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { useContext } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useWebSocket } from '../components/websocket/WebSocketProvider'
 
 export default function Homev2() {
     const [cat,setCat]=useState('')
@@ -24,6 +25,12 @@ export default function Homev2() {
       const NotificationRef = useRef(null);
       const SearchcardRef = useRef(null);
       const location = useLocation();
+      
+      // Usar o hook useWebSocket para obter a contagem de notificações
+      const { notificationCount, resetNotificationCount } = useWebSocket();
+      
+      // Forçar o valor para zero se não for um número válido ou for menor que zero
+      const safeCount = (!notificationCount || isNaN(notificationCount) || notificationCount < 0) ? 0 : notificationCount;
     
       useEffect(() => {
         const handleClickOutside = (event) => {
@@ -165,10 +172,7 @@ export default function Homev2() {
                   size={30} 
                   fill={isActiveRoute('/chat') ? 'currentColor' : 'none'} 
                 />
-                <span className="absolute -top-1 -right-2 bg-red-500
-                 text-white text-xs rounded-full min-w-[18px] max-w-[20px] h-[18px] flex items-center justify-center">
-                  +9
-                </span>
+                {/* Ponto de notificação do chat removido */}
               </div>
             </button>
 
@@ -184,7 +188,11 @@ export default function Homev2() {
             </button>
 
             <button 
-              onClick={() => handleNavigate('/notifications')} 
+              onClick={() => {
+                handleNavigate('/notifications');
+                // Resetar contador de notificações ao clicar no sino
+                resetNotificationCount();
+              }} 
               className={`text-gray-600 relative ${
                 isActiveRoute('/notifications') ? 'text-indigo-600' : ''
               }`}
@@ -194,9 +202,11 @@ export default function Homev2() {
                   size={30} 
                   fill={isActiveRoute('/notifications') ? 'currentColor' : 'none'} 
                 />
-                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                  3
-                </span>
+                {safeCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
+                    {safeCount > 99 ? '99+' : safeCount}
+                  </span>
+                )}
               </div>
             </button>
 
@@ -205,9 +215,7 @@ export default function Homev2() {
               className="text-gray-600 relative hchild mr-2"
             >
               <FiShoppingCart size={30} />
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[16px] h-[16px] flex items-center justify-center">
-                3
-              </span>
+              {/* Ponto de notificação do carrinho removido */}
             </button>
           </div>
         </div>
@@ -261,23 +269,21 @@ export default function Homev2() {
                     <div className="flex justify-between flex-1">
                         <div className="relative  h-[30px] flex items-center justify-center">
                             <MessageCircle size={30} className='text-gray-700  hover:text-indigo-600'/>
-                            <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 px-[1px]">
-                                <span>+9</span>
-                            </div>
+                            {/* Ponto de notificação do chat removido */}
                         </div>
 
-                        <div className="relative  h-[30px] flex items-center justify-center">
+                        <div className="relative  h-[30px] flex items-center justify-center" onClick={() => resetNotificationCount()}>
                             <Bell size={30} className='text-gray-700  hover:text-indigo-600'/>
-                            <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 px-[1px] min-w-[15px] flex items-center">
-                                <span>4</span>
-                            </div>
+                            {safeCount > 0 && (
+                                <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 px-[1px] min-w-[15px] flex items-center">
+                                    <span>{safeCount > 99 ? '99+' : safeCount}</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="relative  h-[30px] flex items-center justify-center">
                             <ShoppingCart size={30} className='text-gray-700  hover:text-indigo-600'/>
-                            <div className="bg-red-500 text-white text-xs rounded-full absolute justify-center -top-0 -right-1 px-[1px] min-w-[15px] flex items-center">
-                                <span>5</span>
-                            </div>
+                            {/* Ponto de notificação do carrinho removido */}
                         </div>
                     </div>
                 </div>

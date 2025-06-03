@@ -11,10 +11,10 @@ import { suggestedProducts } from '../data/sugest';
 import { Notifications } from './popupmenu/notifications';
 import SearchCard from './popupmenu/searchCard';
 import PublishProductCard from './PublishProduct';
+import { useWebSocket } from './websocket/WebSocketProvider';
 
 import { MessageCircle,Menu, Bell, Home } from 'lucide-react';
 import { FaPlus } from 'react-icons/fa';
-
 
 function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -33,6 +33,12 @@ function Header() {
   const NotificationRef = useRef(null);
   const SearchcardRef = useRef(null);
   const location = useLocation();
+  
+  // Usar o hook useWebSocket para obter a contagem de notificações
+  const { notificationCount, resetNotificationCount } = useWebSocket();
+  
+  // Forçar o valor para zero se não for um número válido ou for menor que zero
+  const safeCount = (!notificationCount || isNaN(notificationCount) || notificationCount < 0) ? 0 : notificationCount;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -166,11 +172,17 @@ function Header() {
             </button>
             
             <div className='hover:bg-indigo-200 w-[40px] h-[40px] rounded-full flex items-center justify-center bg-gradient-to-r from-pink-100 to-red-100'>
-              <button onClick={() => hangleNotification()} className="text-gray-600 hover:text-blue-600 relative">
+              <button onClick={() => {
+                hangleNotification();
+                // Resetar contador de notificações ao clicar no sino
+                resetNotificationCount();
+              }} className="text-gray-600 hover:text-blue-600 relative">
                 <FiBell size={24} />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                  3
-                </span>
+                {safeCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
+                    {safeCount > 99 ? '99+' : safeCount}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -185,9 +197,7 @@ function Header() {
                   size={24} 
                   fill={isActiveRoute('/chat') ? 'currentColor' : 'none'} 
                 />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                  5
-                </span>
+                {/* Ponto de notificação de chat removido */}
               </button>
             </div>
 
@@ -197,9 +207,7 @@ function Header() {
                 className="text-gray-600 hover:text-blue-600 relative cursor-pointer"
               >
                 <FiShoppingCart size={24} />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                  3
-                </span>
+                {/* Ponto de notificação do carrinho removido */}
               </button>
             </div>
           </div>
@@ -279,10 +287,12 @@ function Header() {
                   size={30} 
                   fill={isActiveRoute('/chat') ? 'currentColor' : 'none'} 
                 />
-                <span className="absolute -top-1 -right-2 bg-red-500
+                {safeCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-red-500
                  text-white text-xs rounded-full min-w-[18px] max-w-[20px] h-[18px] flex items-center justify-center">
-                  +9
-                </span>
+                    {safeCount > 99 ? '99+' : safeCount}
+                  </span>
+                )}
               </div>
             </button>
 
@@ -308,9 +318,11 @@ function Header() {
                   size={30} 
                   fill={isActiveRoute('/notifications') ? 'currentColor' : 'none'} 
                 />
-                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
-                  3
-                </span>
+                {safeCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[18px] h-[18px] flex items-center justify-center">
+                    {safeCount > 99 ? '99+' : safeCount}
+                  </span>
+                )}
               </div>
             </button>
 
@@ -319,9 +331,7 @@ function Header() {
               className="text-gray-600 relative hchild mr-2"
             >
               <FiShoppingCart size={30} />
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-[16px] h-[16px] flex items-center justify-center">
-                3
-              </span>
+              {/* Ponto de notificação do carrinho removido */}
             </button>
           </div>
         </div>
