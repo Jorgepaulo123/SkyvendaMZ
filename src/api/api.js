@@ -42,6 +42,28 @@ api.interceptors.response.use(
         if (error.message === 'Network Error') {
             console.error('CORS or Network Error. Please check if the server allows cross-origin requests.');
         }
+        
+        // Log API errors with more details for debugging
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('API Error Response:', {
+                data: error.response.data,
+                status: error.response.status,
+                headers: error.response.headers,
+                url: error.config?.url || 'unknown URL'
+            });
+        } else if (error.request) {
+            // The request was made but no response was received
+            console.error('API Error Request:', {
+                request: error.request,
+                url: error.config?.url || 'unknown URL'
+            });
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error('API Error Setup:', error.message);
+        }
+        
         return Promise.reject(error);
     }
 );

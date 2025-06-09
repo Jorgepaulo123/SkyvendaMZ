@@ -29,7 +29,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
   
     return (
       <div
-        className="flex bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100"
+        className="flex bg-white rounded-xl shadow-sm transition-all duration-200 overflow-hidden border border-gray-100"
         style={{ maxHeight: '130px', height: '100%', width: '100%' }}
       >
         <div className="relative w-1/3 shrink-0">
@@ -38,7 +38,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
             src={`${product.thumb}`}
             onError={(e) => e.target.src = 'imagem.jpg'}
             alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-full object-cover transition-transform duration-200"
             />
           </div>
           {product.views > 1000 && (
@@ -73,7 +73,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
                 </span>
               </div>
               <h3
-                className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate"
+                className="font-semibold text-gray-900 transition-colors truncate"
                 title={product.title}
               >
                 {product.title}

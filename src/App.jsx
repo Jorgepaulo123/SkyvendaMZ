@@ -59,6 +59,7 @@ import PublicationsPage from './pages/PublicationsPage';
 import { WebSocketProvider } from './context/websoketContext';
 import WalletPage from './pages/Wallet/index';
 import Security from './pages/settings/security';
+import PasswordSettings from './pages/settings/password';
 
 function App() {
   
@@ -137,6 +138,7 @@ function App() {
                   <Route path="/accounts/language/" element={<PrivateRoute><Layout header={false}><SettingLayout><Language/></SettingLayout></Layout></PrivateRoute>} />
                   <Route path="/accounts/verification/" element={<PrivateRoute><Layout header={false}><SettingLayout><Verification/></SettingLayout></Layout></PrivateRoute>} />          
                   <Route path="/settings/security" element={<PrivateRoute><Layout header={false}><SettingLayout><Security/></SettingLayout></Layout></PrivateRoute>} />
+                  <Route path="/settings/password" element={<PrivateRoute><Layout header={false}><SettingLayout><PasswordSettings/></SettingLayout></Layout></PrivateRoute>} />
                   <Route path="/pedido/:id" element={<PrivateRoute><Layout><Layout2><OneOrder/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
                   <Route path="/profile/review" element={<PrivateRoute><Layout header={false}><SettingLayout><Form_Perfil /></SettingLayout></Layout></PrivateRoute>} />

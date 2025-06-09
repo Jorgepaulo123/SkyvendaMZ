@@ -30,7 +30,7 @@ export default function Security() {
   const fetchPinConfiguration = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/pin/configuracao`, {
+      const response = await axios.get(`https://skyvendamz-1.onrender.com/pin/configuracao`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -64,7 +64,7 @@ export default function Security() {
 
     try {
       setLoading(true);
-      await axios.post(`${import.meta.env.VITE_API_URL}/pin/configurar`, 
+      await axios.post(`https://skyvendamz-1.onrender.com/pin/configurar`, 
         {
           pin: newPin,
           pin_ativo: pinConfig.pin_ativo,
@@ -105,7 +105,7 @@ export default function Security() {
 
     try {
       setLoading(true);
-      await axios.put(`${import.meta.env.VITE_API_URL}/pin/atualizar`, 
+      await axios.put(`https://skyvendamz-1.onrender.com/pin/atualizar`, 
         {
           pin_atual: currentPin,
           novo_pin: newPin,
@@ -141,7 +141,7 @@ export default function Security() {
       
       if (hasPinConfig) {
         // Update existing PIN config
-        await axios.put(`${import.meta.env.VITE_API_URL}/pin/atualizar`, 
+        await axios.put(`https://skyvendamz-1.onrender.com/pin/atualizar`, 
           {
             ...updatedConfig,
             valor_minimo_pin: parseFloat(updatedConfig.valor_minimo_pin)
@@ -174,7 +174,7 @@ export default function Security() {
   const handleSaveMinimumValue = async () => {
     try {
       setLoading(true);
-      await axios.put(`${import.meta.env.VITE_API_URL}/pin/atualizar`, 
+      await axios.put(`https://skyvendamz-1.onrender.com/pin/atualizar`, 
         {
           ...pinConfig,
           valor_minimo_pin: parseFloat(pinConfig.valor_minimo_pin)

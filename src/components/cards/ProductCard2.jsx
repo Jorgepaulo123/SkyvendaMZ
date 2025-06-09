@@ -33,8 +33,8 @@ function useInView(options = {}) {
 }
 
 const ProductCard2 = ({ product }) => {
-  const [isLiked, setIsLiked] = useState(product.liked);
-  const [likesCount, setLikesCount] = useState(product.likes);
+  const [isLiked, setIsLiked] = useState(product.liked || false);
+  const [likesCount, setLikesCount] = useState(product.likes || 0);
   const navigate = useNavigate();
   const { isAuthenticated, token } = useContext(AuthContext);
   const [ref, isInView] = useInView();
@@ -60,85 +60,109 @@ const ProductCard2 = ({ product }) => {
     });
   }, [isLiked, isAuthenticated, navigate, product.slug, token]);
 
+  const handleBuyClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/post/${product.slug}`);
+  };
+
   return (
     <div 
       ref={ref}
-      className={`group hover:shadow-2xl transition-all duration-500 hover:p-4 hover:rounded-3xl transform ${
+      className={`group bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 ${
         isInView 
           ? 'opacity-100 translate-y-0' 
           : 'opacity-0 translate-y-20'
       }`}
-      onClick={() => navigate(`/post/${product.slug}`)}
     >
-      <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
-        <img
-          src={product.thumb} // Usando diretamente a URL completa do thumb
-          onError={(e) => e.target.src = `${base_url}/default.png`}
-          alt={product.title}
-          className="h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="absolute top-4 left-4 flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
-          <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-          <span className="text-sm font-medium">{product.state}</span>
-        </div>
-        <button 
-          onClick={handleLike}
-          className="absolute top-4 right-4 p-3 rounded-full bg-white/80 backdrop-blur-sm shadow-xl hover:bg-white transition-all hover:scale-110 hover:shadow-2xl"
-        >
-          <Heart className={`h-5 w-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} />
-        </button>
-      </div>
-      <div className="mt-6">
-        <div className="flex items-center space-x-2 mb-2">
+      <div 
+        onClick={() => navigate(`/post/${product.slug}`)}
+        className="cursor-pointer"
+      >
+        <div className="relative aspect-square overflow-hidden bg-gray-100">
           <img
-            src={`${product.user.avatar}`}
-            onError={(e) => e.target.src = `${base_url}/avatar.png`}
-            className="w-6 h-6 rounded-full"
+            src={product.thumb}
+            onError={(e) => e.target.src = `${base_url}/default.png`}
+            alt={product.title}
+            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
           />
-          <span  
-            className="text-sm text-gray-600 hover:underline hover:text-[#7a4fed]"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              navigate(`/${product.user.username}`);
-            }}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute top-4 left-4 flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
+            <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+            <span className="text-sm font-medium">{product.state}</span>
+          </div>
+          <button 
+            onClick={handleLike}
+            className="absolute top-4 right-4 p-2.5 rounded-full bg-white/90 backdrop-blur-sm shadow-xl hover:bg-white transition-all hover:scale-110"
           >
-            {product.user.name}
-          </span>
-          <span className="text-sm text-gray-400">•</span>
-          <span className="text-sm text-gray-400">{product.time}</span>
+            <Heart className={`h-5 w-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} />
+          </button>
         </div>
-        <div className="flex justify-between items-start">
-          <div className="max-w-[70%]">
-            <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate" title={product.title}>
-              {product.title}
-            </h3>
-            <div className="flex items-center mt-1 text-sm text-gray-500">
-              <MapPin className="h-4 w-4 mr-1" />
-              {product.province}, {product.district}
-            </div>
+
+        <div className="p-4">
+          {/* Usuário e Tempo */}
+          <div className="flex items-center space-x-2 mb-3">
+            <img
+              src={`${product.user.avatar}`}
+              onError={(e) => e.target.src = `${base_url}/avatar.png`}
+              className="w-6 h-6 rounded-full"
+            />
+            <span  
+              className="text-sm text-gray-600 hover:underline hover:text-[#7a4fed]"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/${product.user.username}`);
+              }}
+            >
+              {product.user.name}
+            </span>
+            <span className="text-sm text-gray-400">•</span>
+            <span className="text-sm text-gray-400">{product.time}</span>
           </div>
-          <p className="text-lg font-semibold bg-gradient-to-r from-[#7a4fed] to-indigo-600 bg-clip-text text-transparent">
-            {product.price.toLocaleString('pt-MZ')} MT
-          </p>
-        </div>
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <div className="flex items-center">
-              <Eye className="h-4 w-4 mr-1" />
-              {product.views}
+
+          {/* Título e Preço */}
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex-1">
+              <h3 className="text-lg font-medium text-gray-900 group-hover:text-[#7a4fed] transition-colors line-clamp-2" title={product.title}>
+                {product.title}
+              </h3>
+              <div className="flex items-center mt-1 text-sm text-gray-500">
+                <MapPin className="h-4 w-4 mr-1" />
+                {product.province}, {product.district}
+              </div>
             </div>
-            <div className="flex items-center">
-              <Heart className="h-4 w-4 mr-1" />
-              {likesCount}
-            </div>
+            <p className="text-xl font-bold text-[#7a4fed] ml-4">
+              {product.price.toLocaleString('pt-MZ')} MT
+            </p>
           </div>
-          {product.negociavel && (
-            <span className='text-md bg-gradient-to-r from-blue-600 to-[#7a4fed] bg-clip-text text-transparent'>Negociavel</span>
-          )}
+
+          {/* Estatísticas e Status */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Eye className="h-4 w-4 mr-1" />
+                {product.views || 0}
+              </div>
+              <div className="flex items-center">
+                <Heart className="h-4 w-4 mr-1" />
+                {likesCount || 0}
+              </div>
+            </div>
+            {product.negociavel && (
+              <span className="text-sm font-medium text-[#7a4fed]">Negociável</span>
+            )}
+          </div>
         </div>
-        <button type="button" className="w-full border border-[#7a4fed] rounded-lg p-3 mt-2 items-center flex justify-center gap-2 hover:bg-indigo-600 hover:text-white">
+      </div>
+
+      {/* Botão de Comprar */}
+      <div className="px-4 pb-4">
+        <button 
+          type="button" 
+          onClick={handleBuyClick}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-[#7a4fed] text-[#7a4fed] hover:bg-[#7a4fed] hover:text-white transition-all duration-300"
+        >
           <ShoppingCart className="h-5 w-5" />
           <span>Comprar Agora</span>
         </button>

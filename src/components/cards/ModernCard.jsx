@@ -6,12 +6,12 @@ import api from '../../api/api';
 import { base_url } from '../../api/api';
 
 export function ModernCard({ product }) {
-  const [isLiked, setIsLiked] = useState(product.liked);
-  const [likesCount, setLikesCount] = useState(product.likes);
+  const [isLiked, setIsLiked] = useState(product.liked || false);
+  const [likesCount, setLikesCount] = useState(parseInt(product.likes) || 0);
   const navigate = useNavigate();
   const { isAuthenticated, token } = useContext(AuthContext);
 
-  const handleLike = useCallback((e) => {
+  const handleLike = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -20,25 +20,44 @@ export function ModernCard({ product }) {
       return;
     }
 
-    setIsLiked((prev) => !prev);
-    setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
-    
-    api.post(`/produtos/${product.slug}/like`, {}, {
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+    try {
+      const response = await api.post(`/produtos/${product.slug}/like`, null, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 200) {
+        setIsLiked(prev => !prev);
+        setLikesCount(response.data.total_likes);
       }
-    });
-  }, [isLiked, isAuthenticated, navigate, product.slug, token]);
+    } catch (error) {
+      console.error('Error liking product:', error);
+    }
+  }, [isAuthenticated, navigate, product.slug, token]);
+
+  // Function to get the correct image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return `${base_url}/default.png`;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${base_url}/storage/produtos/${imagePath}`;
+  };
+
+  // Function to get the correct avatar URL
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return `${base_url}/default-avatar.png`;
+    if (avatarPath.startsWith('http')) return avatarPath;
+    return `${base_url}/storage/avatars/${avatarPath}`;
+  };
 
   return (
     <div className="bg-white rounded-xl border border-grey-300 hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
       <div className="relative h-60" onClick={() => navigate(`/post/${product.slug}`)}>
         <img 
-          src={`${base_url}/produto/${product.thumb}`}
+          src={getImageUrl(product.thumb || product.capa)}
           onError={(e) => e.target.src = `${base_url}/default.png`}
-          alt={product.title}
+          alt={product.title || product.nome}
           className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
         />
         <button 
@@ -51,7 +70,7 @@ export function ModernCard({ product }) {
         </button>
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white line-clamp-2">
-            {product.title}
+            {product.title || product.nome}
           </h3>
         </div>
       </div>
@@ -61,23 +80,24 @@ export function ModernCard({ product }) {
           <div className="flex items-center gap-2 text-gray-600">
             <MapPin className="w-4 h-4" />
             <span className="text-xs sm:text-sm">
-              {product.district}, {product.province}
+              {product.district || product.distrito}, {product.province || product.provincia}
             </span>
           </div>
           <span className="text-lg font-bold text-indigo-600">
-            {product.price}
+            {product.price || product.preco} MT
           </span>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
           <img
-            src={`${base_url}/perfil/${product.user.avatar}`}
-            alt={product.user.name}
+            src={getAvatarUrl(product.user?.avatar)}
+            alt={product.user?.name || 'User avatar'}
             className="h-8 w-8 rounded-full object-cover"
+            onError={(e) => e.target.src = `${base_url}/default-avatar.png`}
           />
           <div>
-            <p className="text-sm font-medium">{product.user.name}</p>
-            <p className="text-xs text-gray-500">{product.time}</p>
+            <p className="text-sm font-medium">{product.user?.name || 'Usuário'}</p>
+            <p className="text-xs text-gray-500">{product.time || 'Agora'}</p>
           </div>
         </div>
 
@@ -85,7 +105,7 @@ export function ModernCard({ product }) {
           <div className="flex items-center gap-3 text-gray-500">
             <div className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
-              <span className="text-xs">{product.views}</span>
+              <span className="text-xs">{product.views || 0}</span>
             </div>
             <div className="flex items-center gap-1">
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
