@@ -63,11 +63,6 @@ export const sidebarMenuItems = [
     highlight: true
   },
   {
-    icon: FiUsers,
-    label: 'Vendedores',
-    route: '/nhonguistas'
-  },
-  {
     icon: FiSettings,
     label: 'Configurações',
     route: '/settings'

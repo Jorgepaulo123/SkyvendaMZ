@@ -7,7 +7,7 @@ import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function DepositForm() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [depositAmount, setDepositAmount] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,8 +71,10 @@ export default function DepositForm() {
 
     try {
       if (selectedPaymentMethod === 'mpesa') {
-        const user_id = localStorage.getItem('user_id');
-        const url = `/usuario/${user_id}/adicionar_saldo/?msisdn=258${phoneNumber}&valor=${depositAmount}`;
+        if (!user?.id) {
+          throw new Error('ID do usuário não encontrado');
+        }
+        const url = `/usuario/${user.id}/adicionar_saldo/?msisdn=258${phoneNumber}&valor=${depositAmount}`;
         const response = await api.post(url, {}, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -91,7 +93,11 @@ export default function DepositForm() {
       
     } catch (error) {
       console.error('Erro ao processar depósito:', error);
-      setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
+      if (error.message === 'ID do usuário não encontrado') {
+        setErrorMessage('Erro de autenticação. Por favor, faça login novamente.');
+      } else {
+        setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
+      }
     } finally {
       setIsProcessing(false);
     }

@@ -28,10 +28,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
       };
   
     return (
-      <div
-        className="flex bg-white rounded-xl shadow-sm transition-all duration-200 overflow-hidden border border-gray-100"
-        style={{ maxHeight: '130px', height: '100%', width: '100%' }}
-      >
+      <div className="bg-white rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300 relative">
         <div className="relative w-1/3 shrink-0">
           <div className="h-full overflow-hidden">
           <img

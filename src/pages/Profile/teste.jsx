@@ -284,7 +284,7 @@ export default function ProfileTeste() {
                                                         className="bg-white border flex items-center justify-center aspect-square rounded-md relative group overflow-hidden shadow-xm hover:shadow-lg transition-shadow"
                                                     >
                                                         <img
-                                                        src={`https://skyvendamz.up.railway.app/produto/${product.thumb}`}
+                                                        src={`https://skyvendamz-1.onrender.com/produto/${product.thumb}`}
                                                         onError={(e) => (e.target.src = `${base_url}/default.png`)}
                                                         className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
                                                         />
@@ -398,7 +398,7 @@ export default function ProfileTeste() {
                                                                 className="bg-white border flex items-center justify-center aspect-square rounded-md relative group overflow-hidden shadow-xm hover:shadow-lg transition-shadow"
                                                             >
                                                                 <img
-                                                                src={`https://skyvendamz.up.railway.app/produto/${product.thumb}`}
+                                                                src={`https://skyvendamz-1.onrender.com/produto/${product.thumb}`}
                                                                 onError={(e) => (e.target.src = `${base_url}/default.png`)}
                                                                 className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
                                                                 />

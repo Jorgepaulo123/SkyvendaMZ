@@ -248,7 +248,7 @@ export default function WalletPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-3 sm:py-4 px-2 sm:px-4 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'text-indigo-500 border-b-2 border-indigo-500'
+                    ? 'text-violet-500 border-b-2 border-violet-500'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -262,16 +262,19 @@ export default function WalletPage() {
           <div className="p-3 sm:p-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
               </div>
             ) : error ? (
               <div className="text-center py-8">
-                <AlertTriangle className="w-10 h-10 mx-auto text-red-500 mb-3" />
-                <h2 className="text-xl font-bold text-red-600 mb-2">Erro</h2>
-                <p className="text-gray-700 mb-4">{error}</p>
+                <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <AlertTriangle className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {error}
+                </h3>
                 <button
                   onClick={loadData}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
                 >
                   Tentar novamente
                 </button>
@@ -281,93 +284,118 @@ export default function WalletPage() {
                 {/* Aba Carteira */}
                 {activeTab === 'wallet' && (
                   <div className="space-y-4 sm:space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="bg-gray-50 p-4 sm:p-6 rounded-xl">
-                        <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Informações do Cartão</h3>
-                        <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">ID:</span>
-                            <span className="font-medium">{cardData.identificador_unico || '****'}</span>
+                    {transactions.length === 0 ? (
+                      <div className="text-center py-12 px-4">
+                        <div className="mx-auto w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mb-4">
+                          <Plus className="w-8 h-8 text-violet-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Ative sua conta SkyWallet
+                        </h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                          Para começar a usar sua carteira digital, faça seu primeiro depósito. 
+                          Com a SkyWallet você pode gerenciar seus anúncios e fazer transações com segurança.
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('deposit')}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
+                        >
+                          <Plus className="w-5 h-5 mr-2" />
+                          Ativar minha conta agora - TESTE
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-gray-50 p-4 sm:p-6 rounded-xl">
+                          <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Informações do Cartão</h3>
+                          <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">ID:</span>
+                              <span className="font-medium">{cardData.identificador_unico || '****'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Usuário:</span>
+                              <span className="font-medium">{userData.username || ''}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Saldo Principal:</span>
+                              <span className="font-medium text-green-600">{formatValue(cardData.saldo_principal)} MZN</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Saldo Congelado:</span>
+                              <span className="font-medium text-blue-600">{formatValue(cardData.saldo_congelado)} MZN</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Bônus:</span>
+                              <span className="font-medium text-purple-600">{formatValue(cardData.bonus)} MZN</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Usuário:</span>
-                            <span className="font-medium">{userData.username || ''}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Saldo Principal:</span>
-                            <span className="font-medium text-green-600">{formatValue(cardData.saldo_principal)} MZN</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Saldo Congelado:</span>
-                            <span className="font-medium text-blue-600">{formatValue(cardData.saldo_congelado)} MZN</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Bônus:</span>
-                            <span className="font-medium text-purple-600">{formatValue(cardData.bonus)} MZN</span>
+                        </div>
+                        
+                        <div className="bg-gray-50 p-4 sm:p-6 rounded-xl">
+                          <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Operações Disponíveis</h3>
+                          <div className="space-y-3 sm:space-y-4">
+                            <button 
+                              onClick={() => setActiveTab('deposit')}
+                              className="w-full flex items-center justify-between p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100"
+                            >
+                              <div className="flex items-center">
+                                <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                <span>Depositar</span>
+                              </div>
+                              <Plus className="w-4 h-4" />
+                            </button>
+                            
+                            <button 
+                              onClick={() => setActiveTab('sacar')}
+                              className="w-full flex items-center justify-between p-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
+                            >
+                              <div className="flex items-center">
+                                <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                <span>Sacar</span>
+                              </div>
+                              <Plus className="w-4 h-4" />
+                            </button>
+                            
+                            <button 
+                              onClick={() => setActiveTab('history')}
+                              className="w-full flex items-center justify-between p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+                            >
+                              <div className="flex items-center">
+                                <History className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                                <span>Histórico</span>
+                              </div>
+                              <FileText className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="bg-gray-50 p-4 sm:p-6 rounded-xl">
-                        <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Operações Disponíveis</h3>
-                        <div className="space-y-3 sm:space-y-4">
-                          <button 
-                            onClick={() => setActiveTab('deposit')}
-                            className="w-full flex items-center justify-between p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100"
-                          >
-                            <div className="flex items-center">
-                              <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span>Depositar</span>
-                            </div>
-                            <Plus className="w-4 h-4" />
-                          </button>
-                          
-                          <button 
-                            onClick={() => setActiveTab('sacar')}
-                            className="w-full flex items-center justify-between p-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
-                          >
-                            <div className="flex items-center">
-                              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span>Sacar</span>
-                            </div>
-                            <Plus className="w-4 h-4" />
-                          </button>
-                          
-                          <button 
-                            onClick={() => setActiveTab('history')}
-                            className="w-full flex items-center justify-between p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
-                          >
-                            <div className="flex items-center">
-                              <History className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                              <span>Histórico</span>
-                            </div>
-                            <FileText className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
-                
-                {/* Aba Depositar */}
-                {activeTab === 'deposit' && <DepositForm />}
-                
-                {/* Aba Sacar */}
-                {activeTab === 'sacar' && <WithdrawForm />}
                 
                 {/* Aba Histórico */}
                 {activeTab === 'history' && (
                   <div className="space-y-4">
                     <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Histórico de Transações</h3>
                     {transactions.length === 0 ? (
-                      <div className="text-center text-gray-500 py-8">
-                        <Clock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300" />
-                        <p>Nenhuma transação encontrada</p>
+                      <div className="text-center py-12 px-4">
+                        <div className="mx-auto w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mb-4">
+                          <Plus className="w-8 h-8 text-violet-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Ative sua conta SkyWallet
+                        </h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                          Para começar a usar sua carteira digital, faça seu primeiro depósito. 
+                          Com a SkyWallet você pode gerenciar seus anúncios e fazer transações com segurança.
+                        </p>
                         <button
-                          className="mt-4 sm:mt-6 px-4 sm:px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                           onClick={() => setActiveTab('deposit')}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
                         >
-                          Depositar agora
+                          <Plus className="w-5 h-5 mr-2" />
+                          Ativar minha conta agora - TESTE
                         </button>
                       </div>
                     ) : (
@@ -399,6 +427,12 @@ export default function WalletPage() {
                     )}
                   </div>
                 )}
+                
+                {/* Aba Depositar */}
+                {activeTab === 'deposit' && <DepositForm />}
+                
+                {/* Aba Sacar */}
+                {activeTab === 'sacar' && <WithdrawForm />}
                 
                 {/* Aba Métodos de Pagamento */}
                 {activeTab === 'payment-methods' && <PaymentMethods />}

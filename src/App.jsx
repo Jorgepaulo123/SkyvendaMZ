@@ -60,6 +60,7 @@ import { WebSocketProvider } from './context/websoketContext';
 import WalletPage from './pages/Wallet/index';
 import Security from './pages/settings/security';
 import PasswordSettings from './pages/settings/password';
+import MeusAnuncios from './pages/MeusAnuncios';
 
 function App() {
   
@@ -126,7 +127,7 @@ function App() {
                   <Route path="/friends" element={<PrivateRoute><Layout><Friends/></Layout></PrivateRoute>} />
                   <Route path="/pedidos" element={<PrivateRoute><Layout><Layout2><Pedidos/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/produtos" element={<PrivateRoute><Layout><Layout2><MyProducts/></Layout2></Layout></PrivateRoute>} />
-                  <Route path="/ads" element={<PrivateRoute><Layout><Layout2><p>aqui vem anucios meus</p></Layout2></Layout></PrivateRoute>} />
+                  <Route path="/ads" element={<PrivateRoute><Layout><Layout2><MeusAnuncios/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/:username/seguidores" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/:username/orders" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />
                   <Route path="/:username/publicacoes" element={<PrivateRoute><Layout header={false}><Layout2><Profile/></Layout2></Layout></PrivateRoute>} />

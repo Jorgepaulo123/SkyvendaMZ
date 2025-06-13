@@ -47,7 +47,7 @@ export default function Login() {
     const baseUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     const options = {
       client_id: '176605076915-cvolrc3k1hjlkedlu7b9c19hi8ft7tuc.apps.googleusercontent.com',
-      redirect_uri: `https://skyvendamz-production.up.railway.app/usuario/auth/callback`,
+      redirect_uri: `https://skyvendamz-1.onrender.com/usuario/auth/callback`,
       response_type: 'code',
       scope: 'email profile',
       access_type: 'offline',

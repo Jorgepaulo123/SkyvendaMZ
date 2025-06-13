@@ -26,7 +26,7 @@ export default function Overview({ totalVendas, totalProdutos, saldoCarteira, pe
           return;
         }
 
-        const response = await axios.get('https://skyvendamz-production.up.railway.app/usuario/transacoes/listar', {
+        const response = await axios.get('https://skyvendamz-1.onrender.com/usuario/transacoes/listar', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',

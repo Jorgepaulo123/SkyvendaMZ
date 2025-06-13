@@ -36,7 +36,7 @@ export function PublicationDialog({ isOpen, onClose }: PublicationDialogProps) {
       formData.append('conteudo', content);
       formData.append('gradient_style', selectedGradient);
 
-      await axios.post('https://skyvendamz-production.up.railway.app/publicacoes/form', 
+      await axios.post('https://skyvendamz-1.onrender.com/publicacoes/form', 
         formData,
         {
           headers: {

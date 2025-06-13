@@ -139,11 +139,6 @@ export default function Sidebar() {
       icon: Wallet,
       label: "SkyWallet",
       route: "/wallet"
-    },
-    {
-      icon: Users,
-      label: "Vendedores",
-      route: "/vendedores"
     }
   ];
 

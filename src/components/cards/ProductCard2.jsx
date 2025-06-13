@@ -1,43 +1,22 @@
-import React, { useState, useCallback, useContext, useEffect, useRef } from 'react';
-import { Heart, MapPin, Eye, MessageCircle, ShoppingCart } from 'lucide-react';
+import React, { useState, useCallback, useContext } from 'react';
+import { Heart, MessageCircle, Eye, MoreHorizontal, Copy, Send, Flag, Zap, Repeat } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/api';
-import { base_url } from '../../api/api';
-
-function useInView(options = {}) {
-  const [isInView, setIsInView] = useState(false);
-  const elementRef = useRef(null);
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setIsInView(entry.isIntersecting);
-    }, {
-      threshold: 0.1,
-      ...options
-    });
-
-    observer.observe(element);
-
-    return () => {
-      if (element) {
-        observer.unobserve(element);
-      }
-    };
-  }, [options]);
-
-  return [elementRef, isInView];
-}
 
 const ProductCard2 = ({ product }) => {
-  const [isLiked, setIsLiked] = useState(product.liked || false);
-  const [likesCount, setLikesCount] = useState(product.likes || 0);
+  const [isLiked, setIsLiked] = useState(product?.liked || false);
+  const [likesCount, setLikesCount] = useState(product?.likes || 0);
+  const [showMenu, setShowMenu] = useState(false);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, token } = useContext(AuthContext);
-  const [ref, isInView] = useInView();
+  const { isAuthenticated, user } = useContext(AuthContext);
+
+  if (!product) {
+    return null;
+  }
+
+  const isOwner = user && product.user?.username === user.username;
 
   const handleLike = useCallback((e) => {
     e.preventDefault();
@@ -54,117 +33,188 @@ const ProductCard2 = ({ product }) => {
     api.post(`/produtos/${product.slug}/like`, {}, {
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${user?.token}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       }
     });
-  }, [isLiked, isAuthenticated, navigate, product.slug, token]);
+  }, [isLiked, isAuthenticated, navigate, product.slug, user?.token]);
 
-  const handleBuyClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate(`/post/${product.slug}`);
+  const getStatusBadge = () => {
+    const status = product?.state?.toLowerCase();
+    switch (status) {
+      case 'novo':
+        return <span className="px-2 py-1 text-xs font-medium text-white bg-green-500 rounded-full">Novo</span>;
+      case 'seminovo':
+        return <span className="px-2 py-1 text-xs font-medium text-white bg-blue-500 rounded-full">Seminovo</span>;
+      case 'bolada':
+        return <span className="px-2 py-1 text-xs font-medium text-white bg-purple-500 rounded-full">Bolada</span>;
+      default:
+        return null;
+    }
+  };
+
+  const handleCopyLink = () => {
+    const url = window.location.origin + `/post/${product.slug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+    setShowMenu(false);
+  };
+
+  const handleMessage = () => {
+    navigate(`/chat/${product.user?.username}`);
+    setShowMenu(false);
+  };
+
+  const handleReport = () => {
+    alert('Denúncia enviada!');
+    setShowMenu(false);
+  };
+
+  const handleBoost = () => {
+    alert('Função de turbinar anúncio!');
+    setShowMenu(false);
+  };
+
+  const handleMakeNegotiable = () => {
+    alert('Função de tornar negociável!');
+    setShowMenu(false);
   };
 
   return (
-    <div 
-      ref={ref}
-      className={`group bg-white rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 ${
-        isInView 
-          ? 'opacity-100 translate-y-0' 
-          : 'opacity-0 translate-y-20'
-      }`}
-    >
-      <div 
-        onClick={() => navigate(`/post/${product.slug}`)}
-        className="cursor-pointer"
-      >
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <img
-            src={product.thumb}
-            onError={(e) => e.target.src = `${base_url}/default.png`}
-            alt={product.title}
-            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute top-4 left-4 flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-            <span className="text-sm font-medium">{product.state}</span>
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 relative">
+      {/* User Info */}
+      <div className="p-3 flex items-center space-x-2 relative">
+        <img
+          src={product.user?.avatar}
+          onError={(e) => {
+            e.target.src = 'https://via.placeholder.com/40x40';
+          }}
+          className="w-8 h-8 rounded-full"
+          alt={product.user?.name}
+        />
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium text-gray-900">{product.user?.name}</h4>
+            <span className="text-xs text-gray-500">•</span>
+            <span className="text-xs text-gray-500">{product.time}</span>
           </div>
-          <button 
-            onClick={handleLike}
-            className="absolute top-4 right-4 p-2.5 rounded-full bg-white/90 backdrop-blur-sm shadow-xl hover:bg-white transition-all hover:scale-110"
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} />
-          </button>
+          <p className="text-xs text-gray-500">
+            {product.province}, {product.district}
+          </p>
         </div>
-
-        <div className="p-4">
-          {/* Usuário e Tempo */}
-          <div className="flex items-center space-x-2 mb-3">
-            <img
-              src={`${product.user.avatar}`}
-              onError={(e) => e.target.src = `${base_url}/avatar.png`}
-              className="w-6 h-6 rounded-full"
-            />
-            <span  
-              className="text-sm text-gray-600 hover:underline hover:text-[#7a4fed]"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(`/${product.user.username}`);
-              }}
-            >
-              {product.user.name}
-            </span>
-            <span className="text-sm text-gray-400">•</span>
-            <span className="text-sm text-gray-400">{product.time}</span>
-          </div>
-
-          {/* Título e Preço */}
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex-1">
-              <h3 className="text-lg font-medium text-gray-900 group-hover:text-[#7a4fed] transition-colors line-clamp-2" title={product.title}>
-                {product.title}
-              </h3>
-              <div className="flex items-center mt-1 text-sm text-gray-500">
-                <MapPin className="h-4 w-4 mr-1" />
-                {product.province}, {product.district}
-              </div>
+        <div className="relative">
+          <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full" onClick={() => setShowMenu((v) => !v)}>
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fade-in">
+              {isOwner ? (
+                <>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
+                    onClick={handleBoost}
+                  >
+                    <Zap className="w-4 h-4" /> Turbinar
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
+                    onClick={handleCopyLink}
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied ? 'Link copiado!' : 'Copiar link'}
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
+                    onClick={handleMakeNegotiable}
+                  >
+                    <Repeat className="w-4 h-4" /> Tornar negociável
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
+                    onClick={handleMessage}
+                  >
+                    <Send className="w-4 h-4" /> Mensagem
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
+                    onClick={handleCopyLink}
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied ? 'Link copiado!' : 'Copiar link'}
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 gap-2"
+                    onClick={handleReport}
+                  >
+                    <Flag className="w-4 h-4" /> Denunciar
+                  </button>
+                </>
+              )}
             </div>
-            <p className="text-xl font-bold text-[#7a4fed] ml-4">
-              {product.price.toLocaleString('pt-MZ')} MT
-            </p>
-          </div>
-
-          {/* Estatísticas e Status */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <div className="flex items-center">
-                <Eye className="h-4 w-4 mr-1" />
-                {product.views || 0}
-              </div>
-              <div className="flex items-center">
-                <Heart className="h-4 w-4 mr-1" />
-                {likesCount || 0}
-              </div>
-            </div>
-            {product.negociavel && (
-              <span className="text-sm font-medium text-[#7a4fed]">Negociável</span>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Botão de Comprar */}
-      <div className="px-4 pb-4">
-        <button 
-          type="button" 
-          onClick={handleBuyClick}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-[#7a4fed] text-[#7a4fed] hover:bg-[#7a4fed] hover:text-white transition-all duration-300"
+      {/* Product Title and Price */}
+      <div className="px-3 pb-3">
+        <h3 className="text-base font-medium text-gray-900 mb-1">
+          {product.title}
+        </h3>
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-[#7a4fed]">
+            {product.price?.toLocaleString('pt-MZ')} MT
+          </span>
+          {getStatusBadge()}
+        </div>
+      </div>
+
+      {/* Product Image */}
+      <div 
+        onClick={() => navigate(`/post/${product.slug}`)}
+        className="relative aspect-[4/3] overflow-hidden bg-gray-100 cursor-pointer"
+      >
+        <img
+          src={product.thumb}
+          onError={(e) => {
+            e.target.src = 'https://via.placeholder.com/400x300';
+          }}
+          alt={product.title}
+          className="h-full w-full object-cover object-center hover:scale-105 transition-transform duration-500"
+        />
+      </div>
+
+      {/* Interaction Stats */}
+      <div className="p-3 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleLike}
+              className="flex items-center gap-1 text-gray-500"
+            >
+              <Heart className={`h-5 w-5 ${isLiked ? 'fill-[#7a4fed] text-[#7a4fed]' : ''}`} />
+              <span className="text-sm">{likesCount}</span>
+            </button>
+            <div className="flex items-center gap-1 text-gray-500">
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-sm">{product.comments}</span>
+            </div>
+            <div className="flex items-center gap-1 text-gray-500">
+              <Eye className="h-5 w-5" />
+              <span className="text-sm">{product.views}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Comprar Button */}
+        <button
+          onClick={() => navigate(`/post/${product.slug}`)}
+          className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-[#7a4fed] hover:bg-[#7a4fed]/5 rounded-lg transition-colors"
         >
-          <ShoppingCart className="h-5 w-5" />
-          <span>Comprar Agora</span>
+          Comprar
         </button>
       </div>
     </div>

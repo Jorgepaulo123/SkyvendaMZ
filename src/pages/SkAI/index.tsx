@@ -114,7 +114,7 @@ export default function SkAI() {
                   <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100">
                     <div className="relative pb-[100%]">
                       <img 
-                        src={`https://skyvendamz.up.railway.app/produto/${product.thumb}`}
+                        src={`https://skyvendamz-1.onrender.com/produto/${product.thumb}`}
                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           e.currentTarget.src = 'https://skyvenda-mz.vercel.app/default.png';
                         }}

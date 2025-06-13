@@ -20,7 +20,7 @@ export default function ImageGallery({images}) {
     return (
       <div className="relative w-full h-[500px] bg-gray-100 rounded-lg overflow-hidden">
         <img
-          src={`https://skyvendamz.up.railway.app/produto/${images[currentImage]}`}
+          src={`https://skyvendamz-1.onrender.com/produto/${images[currentImage]}`}
           onError={(e) => e.target.src = 'imagem.jpg'}
           alt={`Property image ${currentImage + 1}`}
           className="w-full h-full object-cover"
