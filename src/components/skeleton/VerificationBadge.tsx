@@ -1,9 +1,8 @@
-
-import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Importando o Link do react-router-dom
 
 interface VerificationBadgeProps {
-  status: 'pendente' | 'sim' | null;
+  status: 'pendente' | 'sim' | 'recusado' | 'nao' | null;
 }
 
 const VerificationBadge = ({ status }: VerificationBadgeProps) => {
@@ -21,6 +20,18 @@ const VerificationBadge = ({ status }: VerificationBadgeProps) => {
       <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
         <Clock className="w-4 h-4 mr-1" />
         Em análise
+      </div>
+    );
+  }
+
+  if (status === 'recusado') {
+    return (
+      <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">
+        <XCircle className="w-4 h-4 mr-1" />
+        Recusado{' '}
+        <Link to="/profile/review" className="ml-1 text-blue-500 hover:underline">
+          Ver detalhes
+        </Link>
       </div>
     );
   }

@@ -17,10 +17,15 @@ export function VerificationStatus({ estadoRevisao }) {
     return <PendingCard />;
   }
   
-  if (estadoRevisao === 'nao') {
+  if (estadoRevisao === 'recusado') {
     return <RejectedCard />;
   }
+  
+  if (estadoRevisao === 'nao') {
+    // Renderiza um formulário para usuários que ainda precisam verificar o perfil
+    return <UserForm />;
+  }
 
-  // Renderiza um formulário para usuários que ainda precisam verificar o perfil
+  // Caso padrão: mostrar formulário para qualquer outro caso
   return <UserForm />;
 }
