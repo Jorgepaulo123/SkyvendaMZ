@@ -114,7 +114,7 @@ export default function Header() {
                             </div>
 
                             <div className="relative  h-[30px] flex items-center justify-center">
-                                <ShoppingCart size={30} className='text-gray-700  hover:text-indigo-600' />
+                                <ShoppingCart size={30} className='text-gray-700  hover:text-indigo-600 cursor-pointer' onClick={() => navigate('/pedidos')} />
                                 {/* Ponto de notificação do carrinho removido */}
                             </div>
                         </div>
@@ -236,7 +236,7 @@ export default function Header() {
                         onClick={() => navigate('/menu')}
                         className="text-gray-600 relative  mr-2"
                     >
-                        <FiShoppingCart size={30} />
+                        <FiShoppingCart size={30} onClick={() => navigate('/pedidos')} />
                         {/* Ponto de notificação do carrinho removido */}
                     </button>
                 </div>

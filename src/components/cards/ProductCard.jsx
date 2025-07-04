@@ -28,7 +28,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
       };
   
     return (
-      <div className="bg-white rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300 relative">
+      <div className="bg-white rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300 relative overflow-visible">
         <div className="relative w-1/3 shrink-0">
           <div className="h-full overflow-hidden">
           <img
@@ -87,7 +87,7 @@ export default function ProductCard({ product, onEdit, onDelete,onTurbo }) {
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 z-50">
                 <DropdownMenuItem onClick={() => onEdit(product)} className="gap-2">
                   <Pencil className="w-4 h-4" />
                   Editar

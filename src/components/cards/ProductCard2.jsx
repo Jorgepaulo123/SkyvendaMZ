@@ -5,12 +5,12 @@ import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/api';
 
 const ProductCard2 = ({ product }) => {
-  const [isLiked, setIsLiked] = useState(product?.liked || false);
-  const [likesCount, setLikesCount] = useState(product?.likes || 0);
+  const [isLiked, setIsLiked] = useState(Boolean(product?.liked));
+  const [likesCount, setLikesCount] = useState(Number(product?.likes) || 0);
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useContext(AuthContext);
+  const { isAuthenticated, user, token } = useContext(AuthContext);
 
   if (!product) {
     return null;
@@ -33,7 +33,7 @@ const ProductCard2 = ({ product }) => {
     api.post(`/produtos/${product.slug}/like`, {}, {
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${user?.token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       }
     });
@@ -81,34 +81,37 @@ const ProductCard2 = ({ product }) => {
     setShowMenu(false);
   };
 
+  const UserInfo = () => (
+    <div className="flex-1 min-w-0">
+      <Link to={`/${product.user?.username}` || '#'} className="text-sm font-medium text-gray-900 hover:underline truncate">
+        {product.user?.name}
+      </Link>
+      <div className="text-xs text-gray-500 flex gap-1">
+        <span>{product.time}</span>
+        <span>•</span>
+        <span className="truncate">{product.province}, {product.district}</span>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 relative">
+    <div className="bg-white rounded-xl overflow-visible border border-gray-200 hover:shadow-xl transition-all duration-300 relative">
       {/* User Info */}
-      <div className="p-3 flex items-center space-x-2 relative">
+      <div className="p-3 flex items-start gap-2 relative">
         <img
           src={product.user?.avatar}
-          onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/40x40';
-          }}
-          className="w-8 h-8 rounded-full"
+          onError={(e) => { e.target.src = 'https://via.placeholder.com/40x40'; }}
+          className="w-8 h-8 rounded-full cursor-pointer flex-shrink-0"
           alt={product.user?.name}
+          onClick={() => navigate(`/${product.user?.username}`)}
         />
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-medium text-gray-900">{product.user?.name}</h4>
-            <span className="text-xs text-gray-500">•</span>
-            <span className="text-xs text-gray-500">{product.time}</span>
-          </div>
-          <p className="text-xs text-gray-500">
-            {product.province}, {product.district}
-          </p>
-        </div>
-        <div className="relative">
-          <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full" onClick={() => setShowMenu((v) => !v)}>
+        <UserInfo />
+        <div className="relative ml-auto">
+          <button className="text-gray-400 hover:text-gray-600 p-1 rounded-full" onClick={() => setShowMenu(v => !v)}>
             <MoreHorizontal className="w-5 h-5" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fade-in">
+            <div className="absolute top-0 left-full ml-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 animate-fade-in">
               {isOwner ? (
                 <>
                   <button

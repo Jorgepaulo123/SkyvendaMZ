@@ -24,14 +24,14 @@ export default function MainLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
+    <div className="flex flex-col min-h-screen">
       {/* Header fixo */}
       <div className="flex-none">
         <Header2 />
       </div>
 
       {/* Área de conteúdo com scroll */}
-      <div className="flex-1 overflow-y-auto overscroll-none">
+      <div className="flex-1">
         {children}
       </div>
     </div>

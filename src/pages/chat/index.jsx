@@ -246,7 +246,7 @@ export default function Chat() {
     const { from_user, content } = messageData;
 
     setChats((prevChats) => {
-      const chatIndex = prevChats.findIndex((chat) => chat.id === from_user);
+      const chatIndex = prevChats.findIndex((chat) => String(chat.id) === String(from_user));
       
       // Create new message object
       const newMessage = {
@@ -383,7 +383,7 @@ export default function Chat() {
 
     // Atualiza a lista de chats
     setChats(prevChats => {
-      const chatIndex = prevChats.findIndex(chat => chat.id === selectedUser.id);
+      const chatIndex = prevChats.findIndex(chat => String(chat.id) === String(selectedUser.id));
       if (chatIndex !== -1) {
         const updatedChat = {
           ...prevChats[chatIndex],
@@ -514,8 +514,8 @@ export default function Chat() {
       // Atualiza a lista de chats reordenando para colocar o chat no topo
       setChats((prevChats) => {
         const existingChatIndex = prevChats.findIndex(
-          (chat) => chat.id === selectedUser.id
-        );
+           (chat) => String(chat.id) === String(selectedUser.id)
+         );
 
         if (existingChatIndex !== -1) {
           const chat = prevChats[existingChatIndex];
@@ -1032,9 +1032,9 @@ export default function Chat() {
               {/* Messages container */}
               <div className="flex-1 overflow-y-auto p-4">
                 {selectedUser.mensagens && selectedUser.mensagens.length > 0 ? (
-                  selectedUser.mensagens.map((message) => (
+                  selectedUser.mensagens.map((message, idx) => (
                     <MessageItem 
-                      key={message.id} 
+                      key={`${message.message_id || message.id || idx}-${idx}`} 
                       message={message}
                       audioStates={audioStates}
                       onToggleAudio={handleToggleAudio}

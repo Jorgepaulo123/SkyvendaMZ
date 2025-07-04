@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { ProductCardSkeleton2 } from '@/components/skeleton/productcardskeleton2';
 import ProductCard from './ui/productcard';
 
-export default function Page1({ loading, myproducts, handleEdit, handleTurbo }) {
+export default function Page1({ loading, myproducts = [], handleEdit, handleTurbo }) {
   // Estado para armazenar o termo de busca
   const [searchTerm, setSearchTerm] = useState('');
 
   // Função para filtrar produtos com base no termo de busca
-  const filteredProducts = myproducts.filter((product) =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = myproducts
+    .filter(Boolean) // remove null/undefined
+    .filter((product) => {
+      const title = product?.title?.toLowerCase() || '';
+      return title.includes(searchTerm.toLowerCase());
+    });
 
   return (
     <div className="bg-white rounded-lg shadow h-[calc(100vh-100px)] overflow-y-hidden">

@@ -5,7 +5,8 @@
 /* Base Styles */
 body {
   font-family: 'Inter', sans-serif;
-  overflow: hidden; 
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .glitch {
   font-size: 5rem;

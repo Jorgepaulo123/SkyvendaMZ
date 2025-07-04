@@ -35,7 +35,7 @@ export default function ChatList({chats,gettingChats,handleUserSelect,selectedUs
       ) : (
         chats.map((chat, index) => (
           <div 
-            key={chat.id} 
+            key={`chat-${chat.id}-${index}`} 
             className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer hover:bg-gray-100 ${selectedUser?.id === chat.id ? 'bg-gray-100' : ''}`}
             onClick={() => handleUserSelect(chat)}
           >

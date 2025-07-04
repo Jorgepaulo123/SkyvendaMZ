@@ -56,7 +56,7 @@ export default function MyProducts() {
     if(myproducts?.length>=1){
       setLoading(false)
     }else{
-      api.get(`produtos/produtos/?skip=0&limit=20`, {
+      api.get(`/produtos/produtos/?skip=0&limit=20`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

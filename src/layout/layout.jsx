@@ -8,11 +8,11 @@ import { useToast } from '../hooks/use-toast'
 export default function Layout({children, header=true}) {
 
   return (
-    <div className='w-full h-[100vh] flex relative bg-white'>
+    <div className='w-full min-h-screen flex relative bg-white'>
       <SideBar/>
       <div className="flex flex-1 flex-col bg-[#f8f8ff]">
         {header && <Header />}
-        <div className="flex flex-col flex-1 overflow-y-auto">
+        <div className="flex flex-col flex-1">
           {children}
         </div>
       </div> 
