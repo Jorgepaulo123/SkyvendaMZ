@@ -1,6 +1,7 @@
 import { Send, Bot, Loader2, Trash, Plus,MapPin } from 'lucide-react';
 import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
+import { base_url } from '../../api/api';
 
 interface Product {
   id: string;
@@ -51,7 +52,7 @@ export default function SkAI() {
         'sender_id': "ghost"
       };
       
-      const res = await axios.post('https://skyvendamz-1.onrender.com/skai', data);
+      const res = await axios.post(`${base_url}/skai`, data);
       setMessages(prev => [...prev, { type: res.data.type, content: res.data, isUser: false }]);
     } catch (err) {
       setMessages(prev => [
@@ -114,7 +115,7 @@ export default function SkAI() {
                   <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100">
                     <div className="relative pb-[100%]">
                       <img 
-                        src={`https://skyvendamz-1.onrender.com/produto/${product.thumb}`}
+                        src={`${base_url}/produto/${product.thumb}`}
                         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                           e.currentTarget.src = 'https://skyvenda-mz.vercel.app/default.png';
                         }}

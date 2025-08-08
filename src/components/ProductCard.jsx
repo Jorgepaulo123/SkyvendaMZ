@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { base_url } from '../api/api';
 import { Heart, Eye, MessageCircle, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -51,7 +52,7 @@ const ProductCard = ({ product }) => {
       {/* Image Section */}
       <div className="relative h-[240px] overflow-hidden">
         <img
-          src={`https://skyvendamz-1.onrender.com/produto/${product.capa}`}
+          src={`${base_url}/produto/${product.capa}`}
           alt={product.nome}
           className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
           loading="lazy"

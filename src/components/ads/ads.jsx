@@ -90,7 +90,7 @@ function AdsMore() {
 
   useEffect(() => {
     // Buscar ofertas diárias do endpoint específico
-    axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10')
+    axios.get(`${base_url}/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10`)
       .then(response => {
         setAdvertisements(prev => ({
           ...prev,
@@ -105,7 +105,7 @@ function AdsMore() {
     
     // Você pode adicionar mais chamadas para outros tipos de anúncios aqui
     // Por exemplo:
-    axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=melhores_boladas&limit=10')
+    axios.get(`${base_url}/produtos/anuncios/tipo?tipo_anuncio=melhores_boladas&limit=10`)
       .then(response => {
         setAdvertisements(prev => ({
           ...prev,

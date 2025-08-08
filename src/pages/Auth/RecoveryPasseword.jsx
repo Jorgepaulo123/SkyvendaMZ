@@ -23,7 +23,7 @@ function RecoveryPasseword() {
     setError('');
     
     try {
-      const response = await fetch(`https://skyvendamz-1.onrender.com/usuario/recuperar_senha/?email=${encodeURIComponent(email)}`, {
+      const response = await fetch(`https://skyvenda-8k97.onrender.com/usuario/recuperar_senha/?email=${encodeURIComponent(email)}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json'
@@ -57,7 +57,7 @@ function RecoveryPasseword() {
     const otpValue = otp.join('');
     
     try {
-      const response = await fetch(`https://skyvendamz-1.onrender.com/usuario/verificar_otp/?email=${encodeURIComponent(email)}&otp=${otpValue}`, {
+      const response = await fetch(`https://skyvenda-8k97.onrender.com/usuario/verificar_otp/?email=${encodeURIComponent(email)}&otp=${otpValue}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json'
@@ -103,7 +103,7 @@ function RecoveryPasseword() {
     setLoading(true);
     
     try {
-      const response = await fetch(`https://skyvendamz-1.onrender.com/usuario/resetar_senha/?reset_token=${resetToken}&nova_senha=${password}`, {
+      const response = await fetch(`https://skyvenda-8k97.onrender.com/usuario/resetar_senha/?reset_token=${resetToken}&nova_senha=${password}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json'

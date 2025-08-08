@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Bell, MoreVertical, Check, Trash2, Heart, MessageSquare, UserPlus, ShoppingBag, AlertCircle, ChevronLeft } from 'lucide-react'
 import axios from 'axios'
+import { base_url } from '../../api/api'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useWebSocket } from '../../components/websocket/WebSocketProvider'
@@ -45,7 +46,7 @@ export default function Notificacoes() {
       setLoading(true);
       
       const response = await axios.get(
-        'https://skyvendamz-1.onrender.com/usuario/notificacoes/?page=1&per_page=20&ordem=desc&marcar_como_abertas=true', 
+        `${base_url}/usuario/notificacoes/?page=1&per_page=20&ordem=desc&marcar_como_abertas=true`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -130,7 +131,7 @@ export default function Notificacoes() {
       setMenuAberto(null); // Fecha o menu de opções
       
       const response = await axios.put(
-        `https://skyvendamz-1.onrender.com/usuario/notificacoes/${id}/ler`,
+        `${base_url}/usuario/notificacoes/${id}/ler`,
         {},
         {
           headers: {
@@ -182,7 +183,7 @@ export default function Notificacoes() {
       setMenuAberto(null); // Fecha o menu de opções
       
       const response = await axios.put(
-        `https://skyvendamz-1.onrender.com/usuario/notificacoes/${id}/desativar`,
+        `${base_url}/usuario/notificacoes/${id}/desativar`,
         {},
         {
           headers: {

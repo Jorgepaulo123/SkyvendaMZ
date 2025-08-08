@@ -132,8 +132,8 @@ export default function Profile() {
                         const headers = token ? { Authorization: `Bearer ${token}` } : {};
                         
                         // Fazendo uma chamada direta para garantir que funcione
-                        const response = await axios.get(`https://skyvendamz-1.onrender.com/usuario/perfil/user/${username}`, {
-                            headers: headers
+                        const response = await api.get(`/usuario/perfil/user/${username}`, {
+                            headers: token ? { Authorization: `Bearer ${token}` } : {}
                         });
                         
                         console.log('Resposta do perfil:', response.data);
@@ -151,8 +151,8 @@ export default function Profile() {
                         // Buscar avaliações do usuário
                         if (response.data.id) {
                             try {
-                                const ratingResponse = await axios.get(`https://skyvendamz-1.onrender.com/usuario/usuarios/${response.data.id}/avaliacoes/`, {
-                                    headers: headers
+                                const ratingResponse = await api.get(`/usuario/usuarios/${response.data.id}/avaliacoes/`, {
+                                    headers: token ? { Authorization: `Bearer ${token}` } : {}
                                 });
                                 console.log('Avaliações do usuário:', ratingResponse.data);
                                 setUserRating({
@@ -162,8 +162,8 @@ export default function Profile() {
                                 
                                 // Buscar publicações do usuário
                                 try {
-                                    const publicacoesResponse = await axios.get(`https://skyvendamz-1.onrender.com/usuario/publicacoes/?usuario_id=${response.data.id}&page=1&per_page=10`, {
-                                        headers: headers
+                                    const publicacoesResponse = await api.get(`/usuario/publicacoes/?usuario_id=${response.data.id}&page=1&per_page=10`, {
+                                        headers: token ? { Authorization: `Bearer ${token}` } : {}
                                     });
                                     console.log('Publicações do usuário:', publicacoesResponse.data);
                                     setPublicacoes(publicacoesResponse.data.items || []);
@@ -175,8 +175,8 @@ export default function Profile() {
                                 
                                 // Buscar seguidores do usuário
                                 try {
-                                    const seguidoresResponse = await axios.get(`https://skyvendamz-1.onrender.com/usuario/usuarios/${response.data.id}/seguindo`, {
-                                        headers: headers
+                                    const seguidoresResponse = await api.get(`/usuario/usuarios/${response.data.id}/seguindo`, {
+                                        headers: token ? { Authorization: `Bearer ${token}` } : {}
                                     });
                                     console.log('Seguidores do usuário:', seguidoresResponse.data);
                                     setSeguidores(seguidoresResponse.data.seguindo || []);
@@ -617,7 +617,7 @@ export default function Profile() {
                                                             // Fazer a chamada direta com axios para garantir que funcione
                                                             axios({
                                                                 method: 'POST',
-                                                                url: `https://skyvendamz-1.onrender.com/usuario/${userId}/seguir`,
+                                                                url: `${base_url}/usuario/${userId}/seguir`,
                                                                 headers: {
                                                                     'accept': 'application/json',
                                                                     'Authorization': `Bearer ${token}`

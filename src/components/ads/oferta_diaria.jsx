@@ -10,7 +10,7 @@ export default function Oferta_diaria() {
 
   useEffect(() => {
     // Buscar ofertas diárias diretamente do endpoint específico
-    axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10')
+    axios.get(`${base_url}/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10`)
       .then(response => {
         // Usar os dados diretamente sem transformação para manter a estrutura original
         setProdutos(response.data);
