@@ -1,4 +1,4 @@
-import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star, FileText, Users } from 'lucide-react';
+import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star, FileText, Users, Copy, Check } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -37,6 +37,10 @@ export default function Profile() {
     const [uploading,setUploading]=useState(false);
     const [followLoading, setFollowLoading] = useState(false); // Estado para controlar a animação do botão de seguir
     const [userRating, setUserRating] = useState({ media_estrelas: 0, total_avaliacoes: 0 });
+    const [showSettings, setShowSettings] = useState(false);
+    const [stats, setStats] = useState(null);
+    const [loadingStats, setLoadingStats] = useState(false);
+    const [copied, setCopied] = useState(false);
     
     // Hooks do WebSocket
     const { setChats, setSelectedUser, onlineUsers } = useWebSocket();
@@ -305,6 +309,99 @@ export default function Profile() {
     )}
 
 
+    const openSettings = async () => {
+        if (!token) {
+            toast.error('Faça login para ver suas estatísticas');
+            return;
+        }
+        setShowSettings(true);
+        setCopied(false);
+        setLoadingStats(true);
+        try {
+            const res = await api.get('/usuario/me/stats', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setStats(res.data);
+        } catch (err) {
+            console.error('Erro ao buscar estatísticas básicas:', err);
+            if (err?.response?.status === 401) {
+                toast.error('Sessão expirada. Faça login novamente.');
+            } else {
+                toast.error('Não foi possível carregar as estatísticas');
+            }
+        } finally {
+            setLoadingStats(false);
+        }
+    };
+
+    const SettingsModal = () => (
+        <div className="flex justify-center items-center w-full h-[100vh] z-[99999999999] bg-black/40 fixed top-0 left-0">
+            <div className="w-[480px] max-w-[95vw] bg-white rounded-xl shadow-lg">
+                <div className="px-5 py-4 border-b flex items-center justify-between">
+                    <h3 className="font-semibold">Definições</h3>
+                    <button onClick={() => setShowSettings(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <div className="p-5 space-y-4">
+                    <div>
+                        <label className="text-sm text-gray-600">Seu link de referência</label>
+                        <div className="mt-1 flex items-center gap-2">
+                            <input
+                                className="flex-1 border rounded-md px-3 py-2 text-sm"
+                                readOnly
+                                value={stats?.referral_link || ''}
+                            />
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await navigator.clipboard.writeText(stats?.referral_link || '');
+                                        setCopied(true);
+                                        toast.success('Link copiado');
+                                    } catch (e) {
+                                        toast.error('Falha ao copiar');
+                                    }
+                                }}
+                                className="inline-flex items-center gap-1 bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md text-sm"
+                            >
+                                {copied ? <Check className="w-4 h-4"/> : <Copy className="w-4 h-4"/>}
+                                {copied ? 'Copiado' : 'Copiar'}
+                            </button>
+                        </div>
+                        {stats?.referral_code && (
+                            <p className="text-xs text-gray-500 mt-1">Código: {stats.referral_code}</p>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3">
+                        <div className="border rounded-md p-3 text-center">
+                            <p className="text-xs text-gray-500">Seguidores</p>
+                            <p className="text-xl font-semibold">{stats?.total_seguidores ?? userProfile?.total_seguidores ?? 0}</p>
+                        </div>
+                        <div className="border rounded-md p-3 text-center">
+                            <p className="text-xs text-gray-500">A seguir</p>
+                            <p className="text-xl font-semibold">{stats?.total_seguindo ?? userProfile?.total_seguindo ?? 0}</p>
+                        </div>
+                        <div className="border rounded-md p-3 text-center">
+                            <p className="text-xs text-gray-500">Produtos</p>
+                            <p className="text-xl font-semibold">{stats?.total_produtos ?? userProfile?.total_produtos ?? 0}</p>
+                        </div>
+                        <div className="border rounded-md p-3 text-center">
+                            <p className="text-xs text-gray-500">Referências</p>
+                            <p className="text-xl font-semibold">{stats?.total_referencias ?? 0}</p>
+                        </div>
+                    </div>
+
+                    {loadingStats && (
+                        <div className="text-sm text-gray-500">Carregando...</div>
+                    )}
+                </div>
+                <div className="px-5 py-3 border-t flex justify-end">
+                    <button onClick={() => setShowSettings(false)} className="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 text-sm">Fechar</button>
+                </div>
+            </div>
+        </div>
+    );
+
+
   return (
     <div className='w-full min-h-screen p-4 md:p-10'>
         
@@ -370,9 +467,9 @@ export default function Profile() {
                                             <span className='text-2xl'>{userProfile.username}</span>
                                             <Link to={'/accounts/edit'} className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Editar Perfil</Link>
                                             <Link className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Ver Publicaoes</Link>
-                                            <Link>
+                                            <button onClick={openSettings} className='p-2 rounded-md hover:bg-gray-100'>
                                                 <Settings className='hover:animate-spin'/>
-                                            </Link>
+                                            </button>
                                         </div>
 
                                         <div className="flex py-2 md:h-[40px] gap-4 items-center flex-1 ">
@@ -806,7 +903,8 @@ export default function Profile() {
                 )}
 
         </div>
-        {openAvatarMenu&& <AvatarMenu/>}
+        {openAvatarMenu && <AvatarMenu/>}
+        {showSettings && <SettingsModal/>}
 
     </div>
   )
