@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Eye, Clock, AlertCircle, Trash2, X, Edit2, Plus, Upload } from 'lucide-react';
+import { Eye, Clock, AlertCircle, Trash2, X, Edit2, Plus, Upload, RefreshCw, LayoutGrid, List as ListIcon } from 'lucide-react';
+
 import { Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
 import toast from 'react-hot-toast';
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from "../../components/ui/dialog";
 
-// Criar instância do axios com configurações base
 const api = axios.create({
   baseURL: 'https://skyvendamz-1.onrender.com',
   headers: {
@@ -22,7 +22,6 @@ const api = axios.create({
   }
 });
 
-// Interceptor para adicionar token em todas as requisições
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
   if (token) {
@@ -178,6 +177,9 @@ const AdCard = ({ ad, onDelete, onUpdate }) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showRenewDialog, setShowRenewDialog] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
+  const [renewDays, setRenewDays] = useState(7);
   const { token } = useAuth();
 
   const isApproved = ad.status === 'aprovado';
@@ -234,6 +236,52 @@ const AdCard = ({ ad, onDelete, onUpdate }) => {
       toast.error('Erro ao atualizar anúncio. Tente novamente.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRenew = async () => {
+    try {
+      const diasInt = parseInt(renewDays, 10);
+      if (Number.isNaN(diasInt) || diasInt <= 0) {
+        toast.error('Informe um número de dias válido');
+        return;
+      }
+      setIsRenewing(true);
+      const form = new URLSearchParams();
+      form.append('dias', String(diasInt));
+      const response = await api.put(`/produtos/anuncios/${ad.id}/renovar`, form, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      });
+      toast.success(response.data?.message || 'Anúncio renovado com sucesso');
+      // Atualizar dados locais se backend retornar anuncio atualizado
+      if (response.data?.anuncio) {
+        onUpdate(response.data.anuncio);
+      } else if (typeof ad.dias_restantes === 'number') {
+        onUpdate({ ...ad, dias_restantes: ad.dias_restantes + diasInt });
+      }
+      setShowRenewDialog(false);
+    } catch (err) {
+      console.error('Erro ao renovar anúncio:', err);
+      const data = err?.response?.data;
+      let msg = err?.message || 'Erro ao renovar anúncio';
+      if (data?.detail) {
+        if (Array.isArray(data.detail)) {
+          msg = data.detail.map((d) => d?.msg || JSON.stringify(d)).join(' | ');
+        } else if (typeof data.detail === 'string') {
+          msg = data.detail;
+        } else if (typeof data.detail === 'object' && data.detail.msg) {
+          msg = data.detail.msg;
+        } else {
+          try { msg = JSON.stringify(data.detail); } catch (_) {}
+        }
+      } else if (typeof data?.message === 'string') {
+        msg = data.message;
+      }
+      toast.error(String(msg));
+    } finally {
+      setIsRenewing(false);
     }
   };
 
@@ -311,6 +359,13 @@ const AdCard = ({ ad, onDelete, onUpdate }) => {
               )}
             </div>
             <button
+              onClick={() => setShowRenewDialog(true)}
+              className="text-emerald-600 hover:text-emerald-700 transition-colors p-1 rounded-full hover:bg-emerald-50"
+              title="Renovar anúncio"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => setShowDeleteDialog(true)}
               className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50"
               title="Excluir anúncio"
@@ -320,6 +375,50 @@ const AdCard = ({ ad, onDelete, onUpdate }) => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showRenewDialog} onOpenChange={setShowRenewDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-emerald-600" />
+              Renovar Anúncio
+            </DialogTitle>
+            <DialogDescription>
+              Informe por quantos dias deseja renovar este anúncio.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dias</label>
+              <input
+                type="number"
+                min={1}
+                value={renewDays}
+                onChange={(e) => setRenewDays(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowRenewDialog(false)}
+                disabled={isRenewing}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleRenew}
+                disabled={isRenewing}
+                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              >
+                {isRenewing ? 'Renovando...' : 'Renovar'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {!isApproved && (
         <EditAdDialog
@@ -341,13 +440,211 @@ const AdCard = ({ ad, onDelete, onUpdate }) => {
   );
 };
 
+const AdRow = ({ ad, onDelete, onUpdate }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showRenewDialog, setShowRenewDialog] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
+  const [renewDays, setRenewDays] = useState(7);
+  const { token } = useAuth();
+
+  const isApproved = ad.status === 'aprovado';
+
+  const formatPrice = (price) => {
+    if (!price) return 'Preço não definido';
+    return new Intl.NumberFormat('pt-MZ', {
+      style: 'currency',
+      currency: 'MZN'
+    }).format(price);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'aprovado':
+        return 'bg-green-100 text-green-800';
+      case 'pendente':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'rejeitado':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await api.delete(`/produtos/anuncios/${ad.id}`);
+      toast.success('Anúncio excluído com sucesso');
+      onDelete(ad.id);
+    } catch (err) {
+      console.error('Erro ao excluir anúncio:', err);
+      toast.error('Erro ao excluir anúncio. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleUpdate = async (formData) => {
+    setIsSaving(true);
+    try {
+      const response = await api.put(`/produtos/anuncios/${ad.id}`, formData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      toast.success('Anúncio atualizado com sucesso');
+      onUpdate(response.data.anuncio);
+      setShowEditDialog(false);
+    } catch (err) {
+      console.error('Erro ao atualizar anúncio:', err);
+      toast.error('Erro ao atualizar anúncio. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRenew = async () => {
+    try {
+      const diasInt = parseInt(renewDays, 10);
+      if (Number.isNaN(diasInt) || diasInt <= 0) {
+        toast.error('Informe um número de dias válido');
+        return;
+      }
+      setIsRenewing(true);
+      const form = new URLSearchParams();
+      form.append('dias', String(diasInt));
+      const response = await api.put(`/produtos/anuncios/${ad.id}/renovar`, form, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      });
+      toast.success(response.data?.message || 'Anúncio renovado com sucesso');
+      // Atualizar dados locais se backend retornar anuncio atualizado
+      if (response.data?.anuncio) {
+        onUpdate(response.data.anuncio);
+      } else if (typeof ad.dias_restantes === 'number') {
+        onUpdate({ ...ad, dias_restantes: ad.dias_restantes + diasInt });
+      }
+      setShowRenewDialog(false);
+    } catch (err) {
+      console.error('Erro ao renovar anúncio:', err);
+      const data = err?.response?.data;
+      let msg = err?.message || 'Erro ao renovar anúncio';
+      if (data?.detail) {
+        if (Array.isArray(data.detail)) {
+          msg = data.detail.map((d) => d?.msg || JSON.stringify(d)).join(' | ');
+        } else if (typeof data.detail === 'string') {
+          msg = data.detail;
+        } else if (typeof data.detail === 'object' && data.detail.msg) {
+          msg = data.detail.msg;
+        } else {
+          try { msg = JSON.stringify(data.detail); } catch (_) {}
+        }
+      } else if (typeof data?.message === 'string') {
+        msg = data.message;
+      }
+      toast.error(String(msg));
+    } finally {
+      setIsRenewing(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 mb-2">
+      <div className="flex items-center justify-between p-4">
+        <div>
+          <h3 className="font-medium text-gray-900">{ad.nome}</h3>
+          <p className="text-sm text-gray-500">{ad.descricao}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link 
+            to={`/anuncio/${ad.id}`}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Ver detalhes →
+          </Link>
+          <button
+            onClick={() => setShowRenewDialog(true)}
+            className="text-emerald-600 hover:text-emerald-700 transition-colors p-1 rounded-full hover:bg-emerald-50"
+            title="Renovar anúncio"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50"
+            title="Excluir anúncio"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <Dialog open={showRenewDialog} onOpenChange={setShowRenewDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-emerald-600" />
+              Renovar Anúncio
+            </DialogTitle>
+            <DialogDescription>
+              Informe por quantos dias deseja renovar este anúncio.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dias</label>
+              <input
+                type="number"
+                min={1}
+                value={renewDays}
+                onChange={(e) => setRenewDays(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowRenewDialog(false)}
+                disabled={isRenewing}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleRenew}
+                disabled={isRenewing}
+                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              >
+                {isRenewing ? 'Renovando...' : 'Renovar'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
+    </div>
+  );
+};
+
 const LoadingSkeleton = () => (
   <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
     <div className="aspect-[4/3] bg-gray-200 animate-pulse" />
     <div className="p-4 space-y-3">
       <div className="h-4 bg-gray-200 rounded animate-pulse" />
       <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
-      <div className="flex justify-between items-center pt-2">
+      <div className="flex items-center justify-between pt-2">
         <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
         <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
       </div>
@@ -655,6 +952,7 @@ export default function MeusAnuncios() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const { token } = useAuth();
 
   const fetchAnuncios = async () => {
@@ -708,13 +1006,31 @@ export default function MeusAnuncios() {
                 Gerencie todos os seus anúncios em um só lugar
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateDialog(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Criar Anúncio
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`inline-flex items-center gap-1 px-3 py-2 rounded-md border ${viewMode === 'grid' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300'}`}
+                title="Ver em grade"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Grade
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`inline-flex items-center gap-1 px-3 py-2 rounded-md border ${viewMode === 'list' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300'}`}
+                title="Ver em lista"
+              >
+                <ListIcon className="w-4 h-4" />
+                Lista
+              </button>
+              <button
+                onClick={() => setShowCreateDialog(true)}
+                className="hidden sm:inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Criar Anúncio
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -726,41 +1042,79 @@ export default function MeusAnuncios() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {loading ? (
-              Array.from({ length: 8 }).map((_, index) => (
-                <LoadingSkeleton key={index} />
-              ))
-            ) : anuncios.length > 0 ? (
-              anuncios.map((ad) => (
-                <AdCard 
-                  key={ad.id} 
-                  ad={ad} 
-                  onDelete={handleDelete}
-                  onUpdate={handleUpdate}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8 sm:py-12">
-                <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {loading ? (
+                Array.from({ length: 8 }).map((_, index) => (
+                  <LoadingSkeleton key={index} />
+                ))
+              ) : anuncios.length > 0 ? (
+                anuncios.map((ad) => (
+                  <AdCard 
+                    key={ad.id} 
+                    ad={ad} 
+                    onDelete={handleDelete}
+                    onUpdate={handleUpdate}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 sm:py-12">
+                  <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                    Nenhum anúncio encontrado
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-6 px-4">
+                    Você ainda não tem nenhum anúncio publicado.
+                  </p>
+                  <button
+                    onClick={() => setShowCreateDialog(true)}
+                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Criar novo anúncio
+                  </button>
                 </div>
-                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
-                  Nenhum anúncio encontrado
-                </h3>
-                <p className="text-sm text-gray-500 mb-6 px-4">
-                  Você ainda não tem nenhum anúncio publicado.
-                </p>
-                <button
-                  onClick={() => setShowCreateDialog(true)}
-                  className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Criar novo anúncio
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {loading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="bg-white rounded-lg border border-gray-200 h-20 animate-pulse" />
+                ))
+              ) : anuncios.length > 0 ? (
+                anuncios.map((ad) => (
+                  <AdRow
+                    key={ad.id}
+                    ad={ad}
+                    onDelete={handleDelete}
+                    onUpdate={handleUpdate}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8 sm:py-12">
+                  <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                    Nenhum anúncio encontrado
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-6 px-4">
+                    Você ainda não tem nenhum anúncio publicado.
+                  </p>
+                  <button
+                    onClick={() => setShowCreateDialog(true)}
+                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Criar novo anúncio
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

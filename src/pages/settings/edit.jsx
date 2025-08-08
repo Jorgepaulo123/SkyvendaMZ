@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaCaretDown } from 'react-icons/fa';
 import api from '../../api/api';
-import { Loader, Loader2 } from 'lucide-react';
+import { Loader, Loader2, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Edit() {
@@ -16,7 +16,82 @@ export default function Edit() {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedGender, setSelectedGender] = useState('');
     const dropdownRef = useRef(null);
-    const [saving,setSaving]=useState(false)
+    const [saving,setSaving]=useState(false);
+    // estados de edição individual
+    const [editingPageName,setEditingPageName]=useState(false);
+    const [editingContact,setEditingContact]=useState(false);
+    const [editingBio,setEditingBio]=useState(false);
+    // loading states for inline save
+    const [loadingPageName,setLoadingPageName]=useState(false);
+    const [loadingContact,setLoadingContact]=useState(false);
+    const [loadingBio,setLoadingBio]=useState(false);
+
+    // toggle & save handlers
+    const togglePageName = async () => {
+        if(!editingPageName){
+            setEditingPageName(true);
+            return;
+        }
+        try{
+            setLoadingPageName(true);
+            const formData = new URLSearchParams();
+            formData.append('nome_pagina', pageName);
+            await api.put('/usuario/atualizar', formData, {
+                headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':`Bearer ${token}`}
+            });
+            toast.success('Nome da página atualizado');
+            setEditingPageName(false);
+        }catch(err){
+            toast.error('Erro ao atualizar nome da página');
+            console.error(err);
+        }finally{
+            setLoadingPageName(false);
+        }
+    };
+
+    const toggleContact = async () => {
+        if(!editingContact){
+            setEditingContact(true);
+            return;
+        }
+        try{
+            setLoadingContact(true);
+            const formData = new URLSearchParams();
+            formData.append('contacto', contact);
+            await api.put('/usuario/atualizar', formData, {
+                headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':`Bearer ${token}`}
+            });
+            toast.success('Contacto atualizado');
+            setEditingContact(false);
+        }catch(err){
+            toast.error('Erro ao atualizar contacto');
+            console.error(err);
+        }finally{
+            setLoadingContact(false);
+        }
+    };
+
+    const toggleBio = async () => {
+        if(!editingBio){
+            setEditingBio(true);
+            return;
+        }
+        try{
+            setLoadingBio(true);
+            const formData = new URLSearchParams();
+            formData.append('biografia', bio);
+            await api.put('/usuario/atualizar', formData, {
+                headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':`Bearer ${token}`}
+            });
+            toast.success('Biografia atualizada');
+            setEditingBio(false);
+        }catch(err){
+            toast.error('Erro ao atualizar biografia');
+            console.error(err);
+        }finally{
+            setLoadingBio(false);
+        }
+    };
     
 
     useEffect(() => {
@@ -39,6 +114,26 @@ export default function Edit() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // busca dados atualizados do usuário
+    useEffect(() => {
+        if(!token) return;
+        const fetchUser=async()=>{
+            try{
+                const res=await api.get('/usuario/user',{
+                    headers:{Authorization:`Bearer ${token}`}
+                });
+                const d=res.data||{};
+                setPageName(d.nome_pagina||'');
+                setContact(d.contacto||'');
+                setBio(d.biografia||'');
+                setSelectedGender(d.sexo||'');
+            }catch(err){
+                console.error('Erro ao obter dados do usuário',err);
+            }
+        };
+        fetchUser();
+    }, [token]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -143,34 +238,56 @@ export default function Edit() {
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">
                         <h1 className="font-bold text-lg sm:text-xl">Nome da página</h1>
-                        <input 
-                            type="text" 
-                            placeholder="ex: Nhonguista de carros" 
-                            className="border rounded-xl sm:rounded-2xl w-full p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base" 
-                            value={pageName}
-                            onChange={(e) => setPageName(e.target.value)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                                                className="flex-1 border rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base disabled:opacity-60"
+                                value={editingPageName ? pageName : ''}
+                                placeholder={pageName || 'ex: Nhonguista de carros'}
+                                onChange={(e)=>setPageName(e.target.value)}
+                                disabled={!editingPageName}
+                                readOnly={!editingPageName}
+                            />
+                            <button type="button" onClick={togglePageName} className="text-indigo-500 p-2 hover:bg-indigo-50 rounded">
+                                {loadingBio ? <Loader2 className="w-4 h-4 animate-spin"/> : <Pencil className="w-4 h-4"/>}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">
                         <h1 className="font-bold text-lg sm:text-xl">Mudar contacto</h1>
-                        <input 
-                            type="text" 
-                            placeholder="8645++++67" 
-                            className="border rounded-xl sm:rounded-2xl w-full p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base" 
-                            value={contact}
-                            onChange={(e) => setContact(e.target.value)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                                                className="flex-1 border rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base disabled:opacity-60"
+                                value={editingContact ? contact : ''}
+                                placeholder={contact || '8645++++67'}
+                                onChange={(e)=>setContact(e.target.value)}
+                                disabled={!editingContact}
+                                readOnly={!editingContact}
+                            />
+                            <button type="button" onClick={toggleContact} className="text-indigo-500 p-2 hover:bg-indigo-50 rounded">
+                                {loadingBio ? <Loader2 className="w-4 h-4 animate-spin"/> : <Pencil className="w-4 h-4"/>}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">
                         <h1 className="font-bold text-lg sm:text-xl">Biografia</h1>
-                        <textarea
-                            placeholder="Sobre ti"
-                            className="border rounded-xl sm:rounded-2xl w-full p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base min-h-[100px]"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                        />
+                        <div className="flex items-start gap-2">
+                            <textarea
+                                
+                                className="flex-1 border rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-transparent outline-none text-sm sm:text-base min-h-[100px] disabled:opacity-60"
+                                value={editingBio ? bio : ''}
+                                placeholder={bio || 'Sobre ti'}
+                                onChange={(e)=>setBio(e.target.value)}
+                                disabled={!editingBio}
+                                readOnly={!editingBio}
+                            />
+                            <button type="button" onClick={toggleBio} className="text-indigo-500 p-2 hover:bg-indigo-50 rounded mt-2">
+                                {loadingBio ? <Loader2 className="w-4 h-4 animate-spin"/> : <Pencil className="w-4 h-4"/>}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">

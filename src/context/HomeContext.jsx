@@ -91,7 +91,7 @@ const HomeProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-    api.get('produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias').then(res=>{
+    api.get('/produtos/anuncios/tipo?tipo_anuncio=melhores_boladas').then(res=>{
       setAds(res.data)
     }).catch(err=>{
       console.log(err)

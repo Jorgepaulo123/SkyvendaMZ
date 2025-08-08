@@ -94,9 +94,12 @@ export default function OverviewPage() {
   };
 
   // Filtrar transações por tipo
+  // Entradas (depósitos)
   const depositos = transactions.filter(t => t.tipo === 'entrada');
-  const levantamentos = transactions.filter(t => t.tipo === 'saida' && !t.referencia.includes('Publicação'));
-  const publicacoes = transactions.filter(t => t.referencia.includes('Publicação'));
+  // Saídas que não são compras de produtos (levantamentos)
+  const levantamentos = transactions.filter(t => t.tipo === 'saida' && (t.referencia||'').toLowerCase().includes('levantamento'));
+  // Saídas relacionadas a publicação de anúncios
+  const publicacoes = transactions.filter(t => (t.referencia||'').toLowerCase().includes('publicação'));
 
   const tabs = [
     { id: 'todos', label: 'Todos' },
@@ -122,11 +125,18 @@ export default function OverviewPage() {
     );
   }
 
-  // Calcula o percentual de crescimento (dados fictícios para demonstração)
-  const percentualCrescimento = 12;
-  const produtosHoje = 45;
-  const totalProdutos = 1234;
-  const totalVendas = 125430;
+  // Totais reais
+  const totalDepositos = depositos.reduce((acc, t)=>acc + Number(t.valor || t.valor_transacao || 0), 0);
+  const compras = transactions.filter(t => t.tipo === 'saida' && !(t.referencia||'').toLowerCase().includes('publicação') && !(t.referencia||'').toLowerCase().includes('levantamento'));
+  const totalCompras = compras.reduce((acc, t)=>acc + Number(t.valor || t.valor_transacao || 0), 0);
+  // Crescimento fictício (poderá ser recalculado se desejar)
+  const percentualCrescimento = 0;
+  // Quantidade de depósitos feitos hoje
+  const hoje = new Date().toDateString();
+  const depositosHoje = depositos.filter(d => {
+    const data = new Date(d.created_at || d.data || d.timestamp || d.data_transacao || d.updated_at || d.createdAt);
+    return data.toDateString() === hoje;
+  }).length;
 
   return (
     <div className="p-6">
@@ -135,24 +145,24 @@ export default function OverviewPage() {
       <div className="space-y-6">
         {/* Cards Principais */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Total de Vendas */}
+          {/* Total de Compras */}
           <div className="bg-white rounded-2xl p-6">
             <div className="flex items-center gap-2 text-gray-600 mb-2">
-              <span>Total de Vendas</span>
+              <span>Total de Compras</span>
               <DollarSign className="w-4 h-4 text-green-500" />
             </div>
-            <div className="text-3xl font-bold mb-1">{formatValue(totalVendas)} MZN</div>
+            <div className="text-3xl font-bold mb-1">{formatValue(totalCompras)} MZN</div>
             <div className="text-sm text-green-500">+{percentualCrescimento}% desde último mês</div>
           </div>
 
-          {/* Total de Produtos */}
+          {/* Total de Depósitos */}
           <div className="bg-white rounded-2xl p-6">
             <div className="flex items-center gap-2 text-gray-600 mb-2">
-              <span>Total de Produtos</span>
+              <span>Total de Depósitos</span>
               <Package className="w-4 h-4 text-skyvenda-500" />
             </div>
-            <div className="text-3xl font-bold mb-1">{formatValue(totalProdutos)}</div>
-            <div className="text-sm text-skyvenda-500">{produtosHoje} produtos adicionados hoje</div>
+            <div className="text-3xl font-bold mb-1">{formatValue(totalDepositos)}</div>
+            <div className="text-sm text-skyvenda-500">{depositosHoje} depósitos hoje</div>
           </div>
 
           {/* SkyWallet Card - Design melhorado */}

@@ -12,10 +12,15 @@ import api from '../../api/api';
 import { AuthContext } from '../../context/AuthContext';
 import { HomeContext } from '../../context/HomeContext';
 import { useToast } from '../../hooks/use-toast';
+import axios from 'axios';
+import { useWebSocket } from '../../context/websoketContext';
 import { AdsColumn } from '../../components/ads/ads_column';
 import DOMPurify from 'dompurify';
 import { useCallback } from 'react';
 // Importações necessárias já incluídas acima
+
+// util polyfill to avoid crashing if image error
+const fallbackImg="https://skyvenda-mz.vercel.app/avatar.png";
 
 const ProductSkeleton = () => (
   <div className="fixed inset-0 lg:static overflow-y-auto bg-indigo-50 lg:overflow-hidden">
@@ -150,6 +155,10 @@ export default function ProductPage() {
   const [relacionados,setRelacionados]=useState([])
   const [isloading,setIsLoading]=useState(true)
   const [buyloading,setBuyLoading]=useState(false)
+  const [followLoading,setFollowLoading]=useState(false)
+  const [isFollowing,setIsFollowing]=useState(false)
+
+  const { setSelectedUser, setChats } = useWebSocket();
 
 
   useEffect(() => {
@@ -160,6 +169,7 @@ export default function ProductPage() {
         
         if (produtoLocal) {
           setProduct(produtoLocal);
+          setIsFollowing(produtoLocal?.user?.seguindo || false);
           setIsMyProduct(produtoLocal.user.id === user.id);
           setIsLiked(produtoLocal.liked);
           setLikesCount(produtoLocal.likes);
@@ -182,6 +192,32 @@ export default function ProductPage() {
 
     fetchProduct();
   }, [slug, produtos]);
+
+  // follow seller
+  const handleToggleFollow = async () => {
+    if(!token){ toast({title:'Precisa estar logado'}); navigate('/login'); return; }
+    if(!product?.user?.id) return;
+    try{
+      setFollowLoading(true);
+      await axios.post(`https://skyvendamz-1.onrender.com/usuario/${product.user.id}/seguir`, '', {headers:{Authorization:`Bearer ${token}`, accept:'application/json'}});
+      setIsFollowing(prev=>!prev);
+      toast({title: isFollowing? 'Deixou de seguir' : 'Agora segues este vendedor'});
+    }catch(err){
+      console.error(err);
+      toast({title:'Erro ao seguir'});
+    }finally{
+      setFollowLoading(false);
+    }
+  };
+
+  const handleMessageSeller = () => {
+    if(!isAuthenticated){ toast({title:'Faça login para conversar'}); navigate('/login'); return; }
+    if(!product?.user) return;
+    const chatUser={id:product.user.id, nome:product.user.name, username:product.user.username, foto:product.user.avatar||product.user.perfil, mensagens:[]};
+    setSelectedUser(chatUser);
+    setChats(prev=>{const exists=prev.find(c=>String(c.id)===String(chatUser.id)); if(exists){return [exists,...prev.filter(c=>c.id!==chatUser.id)];} return [chatUser,...prev];});
+    navigate('/chat');
+  };
 
   const handleLike = useCallback(
     async (e) => {
@@ -781,11 +817,11 @@ export default function ProductPage() {
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      <button className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                      <button onClick={handleToggleFollow} disabled={followLoading || isMyProduct} className={`flex items-center gap-1.5 px-4 py-2 text-white text-sm rounded-lg transition-colors ${isFollowing?'bg-gray-500 hover:bg-gray-600':'bg-blue-500 hover:bg-blue-600'} ${followLoading?'opacity-70 cursor-not-allowed':''}`}>
                         <UserPlus className="w-4 h-4" />
-                        <span>Seguir</span>
+                        {followLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : <span>{isFollowing?'Seguindo':'Seguir'}</span>}
                       </button>
-                      <button className="flex items-center gap-1.5 px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
+                      <button onClick={handleMessageSeller} className="flex items-center gap-1.5 px-4 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
                         <Send className="w-4 h-4" />
                         <span>Mensagem</span>
                       </button>

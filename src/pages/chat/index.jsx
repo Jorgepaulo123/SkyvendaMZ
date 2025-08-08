@@ -20,6 +20,7 @@ import { drawWaveform, processAudioRecording, cleanupAudioRecording, toggleAudio
 import { updateMessageById, getLastMessage, filterFriends, createNewChat, updateChatsWithMessage } from '../../utils/chatUtils';
 import UserHeader from './ui/userheader';
 import UserInfoSidebar from './ui/userInfo';
+import ReelsSidebar from './ui/ReelsSidebar';
 
 const API_URL = base_url; 
 
@@ -1018,7 +1019,7 @@ export default function Chat() {
                     <span className="text-sm text-skyvenda-500">gravando...</span>
                   )}
                 </div>
-                {!showUserInfo && (
+                {view !== 'reels' && !showUserInfo && (
                   <Info 
                   className="cursor-pointer" 
                   onClick={() => {
@@ -1026,6 +1027,12 @@ export default function Chat() {
                     setView('info')
                   }}
                 />
+                )}
+                {view !== 'reels' && (
+                  <Play className="cursor-pointer" onClick={() => {
+                    setShowUserInfo(false);
+                    setView('reels');
+                  }} />
                 )}
               </div>
 

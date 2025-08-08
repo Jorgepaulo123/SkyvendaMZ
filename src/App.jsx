@@ -15,6 +15,7 @@ import { LoadingProvider } from './context/LoadingContext';
 import { Toaster as Toasters  } from "./components/ui/toaster"
 import PrivateRoute from './pages/Auth/PrivateRoute';
 import Search from './pages/Search';
+import ReelsPage from './pages/Reels';
 import Form_Perfil from './pages/Profile/form_perfil';
 import FullScreenLoader from './components/loaders/FullScreenLoader';
 import { useEffect } from 'react';
@@ -86,6 +87,7 @@ function App() {
                   {/* Public Routes */}
                   <Route path="/" element={<Layout><Home/></Layout>} />
                   <Route path="/search" element={<Layout><Search /></Layout>} />
+                  <Route path="/reels" element={<Layout header={false}><ReelsPage/></Layout>} />
                   <Route path="/post/:slug" element={<Layout><ProductPage /></Layout>} />
                   <Route path="/produtos/:categoria/:subcategoria" element={<CategoryPage/>} />
                   <Route path="/nhonguistas" element={<Layout><Layout2><Sellers/></Layout2></Layout>} />

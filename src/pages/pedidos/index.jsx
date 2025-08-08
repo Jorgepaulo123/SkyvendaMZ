@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -14,6 +15,7 @@ export default function Pedidos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('todos');
   const { token } = useAuth();
+  const navigate = useNavigate();
   const { myorders, addOrders } = useContext(HomeContext);
   const [loading, setLoading] = useState(true);
   const [cancelLoading,setCancelLoading] =useState(false)
@@ -107,19 +109,9 @@ const {toast}=useToast()
     })
   }
 
-  const handleConfirmEntrega = async (orderId) => {
-    try {
-      await api.put(`/pedidos/${orderId}/entrega`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const updatedOrders = orders.map((order) =>
-        order.id === orderId ? { ...order, status: 'aguardando_confirmacao' } : order
-      );
-      setOrders(updatedOrders);
-      toast({ title: 'Entrega confirmada com sucesso!' });
-    } catch (err) {
-      toast({ title: 'Erro ao confirmar entrega', description: err.message });
-    }
+  const handleConfirmEntrega = (orderId) => {
+    // Redireciona para a página de detalhes do pedido e abre o modal de código
+    navigate(`/pedido/${orderId}?openModal=true`);
   };
 
   const handleConfirmRecebimento = async (orderId) => {
