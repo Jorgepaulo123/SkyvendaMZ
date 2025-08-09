@@ -38,8 +38,8 @@ export default function PublicacoesCarousel({ embedded=false }) {
   };
 
   return (
-    <div className={`${embedded ? '' : 'container mx-auto'} my-8`}>
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg px-6 py-5 relative overflow-hidden">
+    <div className={`${embedded ? '' : 'container mx-auto'} my-8 w-full max-w-full overflow-hidden`}>
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg px-4 md:px-6 py-5 relative overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-800">Publicações</h2>
           <button onClick={()=>scroll(1)} className="text-sm text-indigo-600 hover:underline">Ver mais</button>
@@ -53,9 +53,9 @@ export default function PublicacoesCarousel({ embedded=false }) {
           ▶
         </button>
 
-        <div ref={containerRef} className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x scrollbar-hide">
+        <div ref={containerRef} className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x overscroll-x-contain w-full max-w-full">
           {publicacoes.map(pub => (
-            <div key={pub.id} className="snap-start flex-shrink-0">
+            <div key={pub.id} className="snap-start flex-shrink-0 max-w-[85vw] sm:max-w-none">
               <PublicationCard pub={pub} />
             </div>
           ))}

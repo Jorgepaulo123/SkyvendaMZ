@@ -3,8 +3,7 @@ import AdsMore from '../../components/ads/ads'
 import ByCategory from '../../components/products/by_category'
 import JustForYou from '../../components/products/just_for_you'
 import MixedFeed from '../../components/MixedFeed'
-import PublicacoesCarousel from '../../components/PublicacoesCarousel'
-import NhonguistasCarousel from '../../components/NhonguistasCarousel'
+import HomeCarousels from '../../components/home/HomeCarousels'
 import PromotionalBanners from '../../components/products/PromotionalBanners'
 import MainLayout from '../../components/layout/MainLayout'
 
@@ -12,8 +11,6 @@ function shuffle(arr){return arr.map(v=>({v,sort:Math.random()})).sort((a,b)=>a.
 
 export default function Home() {
   const sections=shuffle([
-            <NhonguistasCarousel key="vend"/>,
-            <PublicacoesCarousel key="pubs"/>,
             <MixedFeed key="mix"/>
           ]);
 
@@ -24,7 +21,8 @@ export default function Home() {
           <AdsMore/>
           <ByCategory/>
           <PromotionalBanners/>
-          {/* seções dinâmicas serão inseridas abaixo */}
+          {/* carrosseis lado a lado conforme pedido */}
+          <HomeCarousels/>
         </div>
         <div className="bg-white w-full px-3 space-y-6">
           {sections}

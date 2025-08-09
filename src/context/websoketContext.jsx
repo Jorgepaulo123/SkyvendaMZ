@@ -5,8 +5,26 @@ import api from "../api/api";
 
 const WebSocketContext = createContext(null);
 
-// Ensure proper protocol conversion by using replace with full protocol strings
-const WS_URL = base_url.replace('http://', 'ws://').replace('https://', 'wss://');
+// Constrói a URL do WebSocket de forma robusta
+function buildWsUrl(token) {
+  try {
+    const isHttps = window.location.protocol === 'https:';
+    const proto = isHttps ? 'wss' : 'ws';
+    const url = new URL(base_url);
+    const host = import.meta?.env?.VITE_WS_HOST ?? url.hostname ?? window.location.hostname;
+    const port = (import.meta?.env?.VITE_WS_PORT ?? url.port) || (isHttps ? '443' : '80');
+    const path = import.meta?.env?.VITE_WS_PATH ?? '/ws';
+    const defaultPort = isHttps ? '443' : '80';
+    const portPart = String(port) === defaultPort || String(port) === '' ? '' : `:${port}`;
+    const q = token ? `?token=${encodeURIComponent(token)}` : '';
+    return `${proto}://${host}${portPart}${path}${q}`;
+  } catch (e) {
+    // fallback para conversão simples
+    const base = base_url.replace('http://', 'ws://').replace('https://', 'wss://');
+    const q = token ? `?token=${encodeURIComponent(token)}` : '';
+    return `${base}/ws${q}`;
+  }
+}
 
 export const WebSocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
@@ -24,6 +42,8 @@ export const WebSocketProvider = ({ children }) => {
   const [soundLoaded, setSoundLoaded] = useState(false);
   // Estado para rastrear usuários online
   const [onlineUsers, setOnlineUsers] = useState([]);
+  // backoff de reconexão
+  const retryRef = useRef(0);
   
   // Referências para controle de duplicação de mensagens e som
   const processedMessages = useRef(new Set());
@@ -279,6 +299,15 @@ export const WebSocketProvider = ({ children }) => {
     });
   }, [user, selectedUser, token, playNotificationSound]);
 
+  // Mantém o selectedUser sincronizado com a lista de chats
+  useEffect(() => {
+    if (!selectedUser) return;
+    const match = chats.find(c => String(c.id) === String(selectedUser.id));
+    if (match && match !== selectedUser) {
+      setSelectedUser(match);
+    }
+  }, [chats, selectedUser]);
+
   const updateMessageById = useCallback((messageId, updateFn) => {
     if (!messageId) return;
     
@@ -367,12 +396,14 @@ export const WebSocketProvider = ({ children }) => {
     if (webSocketConnected || isReconnecting || !isAuthenticated || !token || !isOnline) return;
 
     setIsReconnecting(true);
-    const ws = new WebSocket(`${WS_URL}/ws?token=${token}`);
+    const wsUrl = buildWsUrl(token);
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      console.log("WebSocket conectado!");
+      console.log("WebSocket conectado!", { url: wsUrl });
       setWebSocketConnected(true);
       setIsReconnecting(false);
+      retryRef.current = 0;
     };
   
     ws.onmessage = (event) => {
@@ -435,8 +466,12 @@ export const WebSocketProvider = ({ children }) => {
       }
     };
 
-    ws.onerror = (error) => {
-      console.error("Erro WebSocket:", error);
+    ws.onerror = (event) => {
+      console.error("WebSocket onerror", {
+        type: event?.type,
+        readyState: ws.readyState,
+        url: wsUrl
+      });
       setWebSocketConnected(false);
     };
 
@@ -444,11 +479,13 @@ export const WebSocketProvider = ({ children }) => {
       console.log("WebSocket desconectado!");
       setWebSocketConnected(false);
       if (isOnline && isAuthenticated) {
-        console.log("Tentando reconectar em 10 segundos...");
+        const delay = Math.min(10000, 1000 * 2 ** retryRef.current); // até 10s
+        console.log(`Tentando reconectar em ${Math.round(delay/1000)} segundos...`);
         setTimeout(() => {
           setIsReconnecting(false);
           connectWebSocket();
-        }, 10000); // 10 segundos entre tentativas
+          retryRef.current = Math.min(retryRef.current + 1, 10);
+        }, delay);
       }
     };
 

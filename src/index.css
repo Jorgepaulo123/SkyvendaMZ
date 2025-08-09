@@ -8,6 +8,26 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+/* Evita overflow horizontal em qualquer fase de carregamento */
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Imagens responsivas desde o primeiro paint para evitar layout shift */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Carrosséis: evita que o conteúdo force a viewport a expandir */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 .glitch {
   font-size: 5rem;
   font-weight: bold;

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   ArrowLeft,Edit,Info, 
-  MessageCirclePlus
+  MessageCirclePlus, Play
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -67,6 +67,8 @@ export default function Chat() {
   } = useWebSocket();
   const notificationSound = useRef(null);
 
+  // (handler de voltar já existe mais abaixo; mantemos apenas um para evitar duplicação)
+
   // Função para atualizar o selectedUser e os chats simultaneamente
   const updateSelectedUserAndChats = useCallback((chatId, updateFn) => {
     // Atualiza o selectedUser se for o chat atual
@@ -86,56 +88,9 @@ export default function Chat() {
     });
   }, [selectedUser, setSelectedUser, setChats]);
 
-  // Efeito para sincronizar mensagens recebidas
-  useEffect(() => {
-    if (!socket) return;
-    
-    const handleMessage = (data) => {
-      const messageData = data.data;
-      const normalizedUserId = String(messageData.from_user);
-      
-      // Cria a nova mensagem
-      const newMessage = {
-        id: Date.now(),
-        message_id: messageData.message_id || null,
-        sender_id: normalizedUserId,
-        receiver_id: user?.id,
-        content: messageData.content,
-        message_type: messageData.message_type || 'text',
-        file_url: messageData.file_url || null,
-        file_name: messageData.file_name || null,
-        file_size: messageData.file_size || null,
-        is_delivered: true,
-        reaction: null,
-        is_read: selectedUser?.id === normalizedUserId,
-        created_at: new Date().toISOString(),
-        status: 'received'
-      };
-
-      // Atualiza o chat e o selectedUser
-      updateSelectedUserAndChats(normalizedUserId, (prev) => ({
-        ...prev,
-        mensagens: [...(prev.mensagens || []), newMessage],
-        total_news_msgs: selectedUser?.id === normalizedUserId ? 
-          prev.total_news_msgs : 
-          (prev.total_news_msgs || 0) + 1
-      }));
-
-      // Toca o som de notificação
-      notificationSound.current?.play();
-    };
-
-    socket.addEventListener('message', (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'message') {
-        handleMessage(data);
-      }
-    });
-
-    return () => {
-      socket.removeEventListener('message', handleMessage);
-    };
-  }, [socket, selectedUser, user, updateSelectedUserAndChats]);
+  // Removido: listeners locais do WebSocket para evitar duplicação.
+  // O WebSocketProvider já processa mensagens/typing/recording/status
+  // e atualiza o estado global de chats/selectedUser.
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -185,135 +140,9 @@ export default function Chat() {
   };
   
 
-  useEffect(() => {
-    if (!socket) return;
-    
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      switch(data.type) {
-        case 'message':
-          notificationSound.current?.play()
-          handleIncomingMessage(data.data);
-          break;
+  // Removido: socket.onmessage local para evitar sobrescrever o handler do Provider.
 
-        case 'typing':
-          setUserTyping(data.data.username);
-          setTimeout(() => setUserTyping(null), 3000);
-          break;
-
-        case 'recording':
-          if (data.data.status === 'start') {
-            setUserRecording(`${data.data.username}`);
-          } else if (data.data.status ==='stop') {
-            setUserRecording(null);  // Remove a notificação de "gravando"
-          }
-          break;
-          
-        case 'message_status':
-          console.log("Mensagem de status recebida:", data.data);
-          if (!data.data.message_id) {
-            console.error("Recebido status de mensagem sem message_id:", data.data);
-            break;
-          }
-          
-          // Atualiza a mensagem tanto no usuário selecionado quanto na lista de chats
-          updateMessageById(data.data.message_id, msg => ({
-            ...msg,
-            is_delivered: true,
-            // Apenas atualize a URL do arquivo se não existir ou se vier uma nova URL válida
-            file_url: data.data.file_url && data.data.file_url.trim() !== '' ? 
-                     data.data.file_url : msg.file_url
-          }));
-          
-          console.log("Mensagem específica atualizada:", data.data.message_id);
-          break;
-      
-        case 'notification':
-          notificationSound.current?.play()
-          handleNotification(data.data);
-          break;
-
-        default:
-          console.log('Unknown message type:', data);
-      }
-    };
-    
-    return () => {
-      // Clean up if needed
-    };
-  }, [socket, chats]);
-
-  const handleIncomingMessage = async (messageData) => {
-    const { from_user, content } = messageData;
-
-    setChats((prevChats) => {
-      const chatIndex = prevChats.findIndex((chat) => String(chat.id) === String(from_user));
-      
-      // Create new message object
-      const newMessage = {
-        id: Date.now(),
-        message_id: messageData.message_id || null,
-        sender_id: from_user,
-        receiver_id: user.id,
-        content: content,
-        message_type: messageData.message_type || 'text',
-        file_url: messageData.file_url || null,
-        file_name: messageData.file_name || null,
-        file_size: messageData.file_size || null,
-        is_delivered: true,
-        reaction: null,
-        is_read: selectedUser?.id === from_user,
-        created_at: new Date().toISOString(),
-        status: 'pending'
-      };
-
-      if (chatIndex !== -1) {
-        // Existing chat - update it
-        const chat = prevChats[chatIndex];
-        const updatedChat = {
-          ...chat,
-          mensagens: [...chat.mensagens, newMessage],
-          total_news_msgs: selectedUser?.id === from_user ? 
-            chat.total_news_msgs : 
-            (chat.total_news_msgs || 0) + 1
-        };
-
-        // Update selected user if this chat is currently selected
-        if (selectedUser && selectedUser.id === from_user) {
-          setSelectedUser(updatedChat);
-        }
-
-        return [
-          updatedChat,
-          ...prevChats.filter((_, i) => i !== chatIndex),
-        ];
-      } else {
-        // New chat - fetch user info and create new chat
-        (async () => {
-          try {
-            const response = await api.get(`/usuario/perfil/${from_user}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            const newChat = {
-              id: from_user,
-              nome: response.data.nome,
-              username: response.data.username,
-              foto: response.data.foto_perfil,
-              mensagens: [newMessage],
-              total_news_msgs: 1
-            };
-
-            setChats(current => [newChat, ...current]);
-          } catch (error) {
-            console.error('Error fetching new user info:', error);
-          }
-        })();
-      }
-
-      return prevChats;
-    });
-  };
+  // Removido: handler local de mensagens. O Provider já cria/atualiza chats e mensagens com deduplicação.
 
   const handleNotification = (notification) => {
     if (notification.type === 'user_connected') {
@@ -346,8 +175,8 @@ export default function Chat() {
       total_news_msgs: 0
     }));
 
-    // Atualiza a view para mostrar o chat
-    setView('chat');
+    // Atualiza a view para mostrar o chat (mobile)
+    setView('messages');
     setShowUser(true);
     
     // Scroll para o final das mensagens
@@ -973,7 +802,7 @@ export default function Chat() {
   };
 
   return (
-    <div className='flex h-screen overflow-hidden'>
+    <div className='flex h-[100dvh] md:h-screen overflow-hidden'>
       {/* Chat list sidebar */}
       <div className={`w-full md:w-[350px] flex flex-col border-r border-gray-200 ${
         view !== 'chats' ? 'hidden md:flex' : ''
@@ -987,7 +816,7 @@ export default function Chat() {
       </div>
 
       {/* Main chat area */}
-      <div className={`flex-1 flex flex-col h-screen overflow-hidden ${
+      <div className={`flex-1 flex flex-col h-[100dvh] md:h-screen overflow-hidden ${
         view !== 'messages' ? 'hidden md:flex' : ''
       }`}>
         {!selectedUser ? (
@@ -999,7 +828,7 @@ export default function Chat() {
               <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-4">
                   <ArrowLeft 
-                    className="cursor-pointer md-hidden" 
+                    className="cursor-pointer md:hidden" 
                     onClick={handleBackClick}
                   />
                   <img 
