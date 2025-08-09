@@ -5,7 +5,7 @@ const isDevelopment = window.location.hostname === 'localhost' ||
                       window.location.hostname === '192.168.1.36';
 
 // Direct API access without proxy
-export const base_url = 'https://skyvendamz-1.onrender.com';
+export const base_url = 'https://skyvenda-8k97.onrender.com';
 
 const api = axios.create({
     baseURL: base_url,
