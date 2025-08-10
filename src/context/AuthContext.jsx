@@ -141,6 +141,32 @@ export const AuthProvider = ({ children }) => {
     return <FullScreenLoader />;
   }
 
+  // Ativar conta PRO
+  const activatePro = async () => {
+    if (!token) return;
+    try {
+      const res = await api.post('/usuario/ativar_pro', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Tenta atualizar o usuário atual com a resposta ou refetch
+      let updatedUser = res?.data?.user || res?.data || null;
+      if (!updatedUser) {
+        const userResponse = await api.get('/usuario/user', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        updatedUser = userResponse.data;
+      }
+      setUser(updatedUser);
+      setIsAuthenticated(true);
+      try { const toast = (await import('react-hot-toast')).default; toast.success('Conta PRO ativada!'); } catch {}
+      return updatedUser;
+    } catch (e) {
+      console.error('Falha ao ativar PRO', e);
+      try { const toast = (await import('react-hot-toast')).default; toast.error('Não foi possível ativar PRO'); } catch {}
+      throw e;
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -152,7 +178,8 @@ export const AuthProvider = ({ children }) => {
       setUser,
       getToken, 
       setToken, 
-      isAuthenticated
+      isAuthenticated,
+      activatePro
     }}>
       {children}
     </AuthContext.Provider>

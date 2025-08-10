@@ -1,4 +1,4 @@
-import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star, FileText, Users, Copy, Check } from 'lucide-react';
+import { ClipboardList, DotSquare, Eye, Grid, Heart, Info, Kanban, Loader, Megaphone, MessageCircle, MoreHorizontal, Settings, User2, UserCheck, UserPlus, Award, Package, Star, FileText, Users, Copy, Check, BadgeCheck } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -15,7 +15,7 @@ export default function Profile() {
     const [isMyProfile,setIsMyProfile]=useState(false);
     const [userProfile,setUserProfile]=useState("")
     const [tabSelected,setTabSelected]=useState('posts')
-    const {user,token}=useAuth()
+    const {user,token, activatePro}=useAuth()
     const { username } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
@@ -41,6 +41,8 @@ export default function Profile() {
     const [stats, setStats] = useState(null);
     const [loadingStats, setLoadingStats] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [proDays, setProDays] = useState(20);
+    const [proLoading, setProLoading] = useState(false);
     
     // Hooks do WebSocket
     const { setChats, setSelectedUser, onlineUsers } = useWebSocket();
@@ -341,7 +343,7 @@ export default function Profile() {
                     <h3 className="font-semibold">Definições</h3>
                     <button onClick={() => setShowSettings(false)} className="text-gray-500 hover:text-gray-700">✕</button>
                 </div>
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-6">
                     <div>
                         <label className="text-sm text-gray-600">Seu link de referência</label>
                         <div className="mt-1 flex items-center gap-2">
@@ -390,10 +392,55 @@ export default function Profile() {
                         </div>
                     </div>
 
+                    {/* Ativação da Conta PRO */}
+                    <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-semibold flex items-center gap-2">Conta PRO { (userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && <BadgeCheck className="w-5 h-5 text-sky-500"/> }</h4>
+                            {(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) ? (
+                                <span className="text-sm text-green-600 font-medium">Ativa</span>
+                            ) : (
+                                <span className="text-sm text-gray-500">Inativa</span>
+                            )}
+                        </div>
+                        {!(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && isMyProfile && (
+                            <div className="mt-3 space-y-3">
+                                <p className="text-sm text-gray-600">Valor por dia: <span className="font-semibold">80 MT</span>. Mínimo de dias: <span className="font-semibold">20</span>.</p>
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm text-gray-600">Dias</label>
+                                    <input type="number" min={20} value={proDays}
+                                        onChange={e=>setProDays(Math.max(20, parseInt(e.target.value||0)))}
+                                        className="w-24 border rounded-md px-3 py-2 text-sm"/>
+                                    <span className="text-sm">Total: <span className="font-bold">{(Number(proDays)||20)*80} MT</span></span>
+                                </div>
+                                <button
+                                    disabled={proLoading}
+                                    onClick={async ()=>{
+                                        const dias = Number(proDays)||20;
+                                        if (dias < 20) { toast.error('Mínimo 20 dias'); return; }
+                                        try{
+                                            setProLoading(true);
+                                            await api.put(`/usuario/${user?.id}/ativar_pro/`, { dias }, { headers:{ Authorization:`Bearer ${token}` }});
+                                            toast.success('Conta PRO ativada com sucesso');
+                                            setUserProfile(prev=>({...prev, pro:true}));
+                                        }catch(err){
+                                            const msg = err?.response?.data?.detail || 'Falha ao ativar PRO';
+                                            toast.error(String(msg));
+                                        }finally{
+                                            setProLoading(false);
+                                        }
+                                    }}
+                                    className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md"
+                                >
+                                    {proLoading ? 'Ativando...' : 'Ativar Conta PRO'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                     {loadingStats && (
                         <div className="text-sm text-gray-500">Carregando...</div>
                     )}
-                </div>
                 <div className="px-5 py-3 border-t flex justify-end">
                     <button onClick={() => setShowSettings(false)} className="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 text-sm">Fechar</button>
                 </div>
@@ -464,8 +511,14 @@ export default function Profile() {
                                     {/* area das opcoes e informacoes */}
                                     <div className="w-full space-y-2 ">
                                         <div className="flex py-2 md:h-[40px] gap-4 items-center flex-1 ">
-                                            <span className='text-2xl'>{userProfile.username}</span>
+                                            <span className='text-2xl flex items-center gap-2'>
+                                                {userProfile.username}
+                                                {(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && (
+                                                    <BadgeCheck className="w-5 h-5 text-sky-500" title="Conta PRO"/>
+                                                )}
+                                            </span>
                                             <Link to={'/accounts/edit'} className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Editar Perfil</Link>
+                                            {/* A ativação da conta PRO foi movida para o modal de Definições */}
                                             <Link className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Ver Publicaoes</Link>
                                             <button onClick={openSettings} className='p-2 rounded-md hover:bg-gray-100'>
                                                 <Settings className='hover:animate-spin'/>
@@ -684,7 +737,12 @@ export default function Profile() {
                                                 <span className="text-sm sm:text-base"><span className='font-bold'>{userProfile.total_seguindo || 0}</span> a seguir</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <p className='font-bold text-xl sm:text-2xl'>{userProfile.name}</p>
+                                                <p className='font-bold text-xl sm:text-2xl flex items-center gap-2'>
+                                                    {userProfile.name}
+                                                    {(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && (
+                                                        <BadgeCheck className="w-5 h-5 text-sky-500" title="Conta PRO"/>
+                                                    )}
+                                                </p>
                                                 <p className="text-sm sm:text-base">{userProfile.email}</p>
                                                 {userProfile.biografia && <p className="mt-1 text-sm sm:text-base">{userProfile.biografia}</p>}
                                                 <div className="flex flex-wrap items-center gap-2 mt-2">
