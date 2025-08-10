@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { AlertTriangle } from 'lucide-react';
 import { FaPaypal, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
 import { SiMoneygram } from 'react-icons/si';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import api from '../../api/api';
+import PinModal from '../modals/PinModal';
+
 import { useAuth } from '../../context/AuthContext';
 
 export default function WithdrawForm() {
@@ -20,7 +24,25 @@ export default function WithdrawForm() {
   const [swiftCode, setSwiftCode] = useState('');
   const [email, setEmail] = useState('');
   const [step, setStep] = useState(1);
-  
+  const [userId, setUserId] = useState(null);
+  const [pinOpen, setPinOpen] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
+  useEffect(() => {
+    // obter id do usuário atual
+    const loadUser = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await api.get('/usuario/user', { headers });
+        setUserId(res.data.id);
+      } catch (e) {
+        console.error('Erro ao obter utilizador', e);
+      }
+    };
+    if (token) loadUser();
+  }, [token]);
+
   const resetForm = () => {
     setWithdrawAmount('');
     setPhoneNumber('');
@@ -37,7 +59,7 @@ export default function WithdrawForm() {
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
-    
+
     if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
       setErrorMessage('Por favor, insira um valor válido');
       return;
@@ -67,47 +89,49 @@ export default function WithdrawForm() {
     setIsProcessing(true);
     setErrorMessage('');
 
+    // Guardar dados e abrir modal do PIN
+    setPendingData({
+      valor: parseInt(withdrawAmount, 10),
+      telefone: phoneNumber
+    });
+    setPinOpen(true);
+  };
+
+  const handlePinSubmit = async (pin) => {
     try {
-      // Simulação de processamento - substituir pelo endpoint real
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aqui seria a chamada real à API
-      /*
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/usuario/saque`, {
-        valor: parseFloat(withdrawAmount),
-        metodo: selectedPaymentMethod,
-        telefone: phoneNumber,
-        ...(selectedPaymentMethod === 'bank' ? {
-          conta: accountNumber,
-          titular: accountHolder,
-          banco: bankName,
-          swift: swiftCode
-        } : {}),
-        ...(selectedPaymentMethod === 'paypal' ? {
-          email: email
-        } : {})
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      */
-      
-      // Simular sucesso
-      toast.success(`Solicitação de saque de ${withdrawAmount} MTn enviada com sucesso!`);
-      setSuccessMessage(`Solicitação de saque de ${withdrawAmount} MTn enviada com sucesso! Aguarde o processamento.`);
+      setPinLoading(true);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      };
+      const params = new URLSearchParams();
+      params.set('msisdn', pendingData.telefone);
+      params.set('valor', String(pendingData.valor));
+      params.set('pin', pin);
+      await api.post(`/usuario/${userId}/pagamento/`, params, { headers });
+      toast.success(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso!`);
+      setSuccessMessage(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso! Aguarde o processamento.`);
+      setPinOpen(false);
       resetForm();
-      
     } catch (error) {
-      console.error('Erro ao processar saque:', error);
-      setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu saque. Por favor, tente novamente.');
+      console.error('Erro ao confirmar PIN/saque:', error);
+      setErrorMessage(error.response?.data?.detail || 'Não foi possível concluir o saque.');
     } finally {
+      setPinLoading(false);
       setIsProcessing(false);
     }
   };
 
   return (
     <div className="space-y-6">
+      <PinModal
+        open={pinOpen}
+        mode="confirm"
+        onClose={() => { setPinOpen(false); setIsProcessing(false); }}
+        onSubmit={handlePinSubmit}
+        loading={pinLoading}
+      />
+
       {successMessage && (
         <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 flex items-start">
           <div className="flex-shrink-0 mr-3">

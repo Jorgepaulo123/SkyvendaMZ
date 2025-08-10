@@ -404,13 +404,13 @@ export default function Profile() {
                         </div>
                         {!(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && isMyProfile && (
                             <div className="mt-3 space-y-3">
-                                <p className="text-sm text-gray-600">Valor por dia: <span className="font-semibold">80 MT</span>. Mínimo de dias: <span className="font-semibold">20</span>.</p>
+                                <p className="text-sm text-gray-600">Valor por dia: <span className="font-semibold">115 MT</span>. Mínimo de dias: <span className="font-semibold">20</span>.</p>
                                 <div className="flex items-center gap-3">
                                     <label className="text-sm text-gray-600">Dias</label>
                                     <input type="number" min={20} value={proDays}
                                         onChange={e=>setProDays(Math.max(20, parseInt(e.target.value||0)))}
                                         className="w-24 border rounded-md px-3 py-2 text-sm"/>
-                                    <span className="text-sm">Total: <span className="font-bold">{(Number(proDays)||20)*80} MT</span></span>
+                                    <span className="text-sm">Total: <span className="font-bold">{(Number(proDays)||20)*115} MT</span></span>
                                 </div>
                                 <button
                                     disabled={proLoading}

@@ -23,12 +23,6 @@ api.interceptors.request.use(function (config) {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Add CORS headers to the request
-    config.headers['Access-Control-Allow-Origin'] = '*';
-    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-    config.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, X-Request-With';
-    
     return config;
 }, function (error) {
     return Promise.reject(error);

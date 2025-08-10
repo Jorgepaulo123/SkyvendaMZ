@@ -8,7 +8,9 @@ const WebSocketContext = createContext(null);
 // Constrói a URL do WebSocket de forma robusta
 function buildWsUrl(token) {
   try {
-    const isHttps = window.location.protocol === 'https:';
+    // Preferir o protocolo do backend (base_url) para evitar ws em produção https
+    const apiUrl = new URL(base_url);
+    const isHttps = apiUrl.protocol === 'https:';
     const proto = isHttps ? 'wss' : 'ws';
     const url = new URL(base_url);
     const host = import.meta?.env?.VITE_WS_HOST ?? url.hostname ?? window.location.hostname;

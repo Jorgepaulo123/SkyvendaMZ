@@ -17,6 +17,7 @@ import { useWebSocket } from '../../context/websoketContext';
 import { AdsColumn } from '../../components/ads/ads_column';
 import DOMPurify from 'dompurify';
 import { useCallback } from 'react';
+import PinModal from '../../components/modals/PinModal';
 // Importações necessárias já incluídas acima
 
 // util polyfill to avoid crashing if image error
@@ -159,6 +160,11 @@ export default function ProductPage() {
   const [isFollowing,setIsFollowing]=useState(false)
 
   const { setSelectedUser, setChats } = useWebSocket();
+  // PIN modal state
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [pinModalMode, setPinModalMode] = useState('confirm'); // 'setup' | 'confirm'
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pendingParams, setPendingParams] = useState(null);
 
 
   useEffect(() => {
@@ -192,6 +198,19 @@ export default function ProductPage() {
 
     fetchProduct();
   }, [slug, produtos]);
+
+  // Notificações em tempo real relacionadas a pedidos
+  useEffect(() => {
+    const handler = (event) => {
+      const n = event.detail;
+      const tipo = n?.data?.tipo || n?.type || '';
+      if (String(tipo).toLowerCase().includes('pedido')) {
+        toast({ title: n?.title || 'Atualização de Pedido', description: n?.message || 'Atualização recebida.' });
+      }
+    };
+    window.addEventListener('new-notification', handler);
+    return () => window.removeEventListener('new-notification', handler);
+  }, []);
 
   // follow seller
   const handleToggleFollow = async () => {
@@ -303,7 +322,7 @@ export default function ProductPage() {
       });
 
       // Usando o endpoint correto conforme a documentação
-      api.post('/pedidos/pedidos/criar/', params, {
+      api.post('/pedidos/criar/', params, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -356,13 +375,77 @@ export default function ProductPage() {
           title: "✨ Sucesso!",
           description: "Pedido enviado com sucesso! 🚀",
         });
-      }).catch(err => {
+      }).catch(async err => {
         console.error('Erro ao processar pedido skywallet:', err.response?.data || err.message);
-        toast({
-          title: "😢 Erro",
-          description: err.response?.data?.detail || "Ocorreu um erro ao processar o pedido",
-        });
+        const detail = err.response?.data?.detail || '';
+        // Se o backend exigir PIN, abrir fluxo de PIN
+        if (err.response?.status === 400 && String(detail).toLowerCase().includes('pin')) {
+          await handlePinAndRetryPurchase(params);
+        } else {
+          toast({
+            title: "😢 Erro",
+            description: detail || "Ocorreu um erro ao processar o pedido",
+          });
+        }
       }).finally(() => setBuyLoading(false));
+    }
+  }
+
+  // Abre modal para configurar/fornecer PIN e reenvia a compra
+  const handlePinAndRetryPurchase = async (baseParams) => {
+    try {
+      // Buscar configuração atual do PIN
+      const cfg = await api.get(`/pin/configuracao`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => r.data).catch(() => ({ pin_ativo: false }));
+
+      setPendingParams(baseParams);
+      if (!cfg?.pin_ativo) {
+        setPinModalMode('setup');
+        setPinModalOpen(true);
+      } else {
+        setPinModalMode('confirm');
+        setPinModalOpen(true);
+      }
+    } catch (e) {
+      toast({ title: 'Erro', description: 'Falha ao obter configuração de PIN' });
+    }
+  }
+
+  const handlePinModalSubmit = async (pin) => {
+    try {
+      setPinLoading(true);
+      // Se o modo for setup primeiro configuramos o PIN e depois pedimos confirmação
+      if (pinModalMode === 'setup') {
+        await api.post(`/pin/configurar`, {
+          pin,
+          pin_ativo: true,
+          requer_pin_transferencia: true,
+          requer_pin_visualizacao: false,
+          valor_minimo_pin: 0
+        }, { headers: { Authorization: `Bearer ${token}` }});
+        // Agora solicitar o PIN novamente para confirmar compra
+        setPinModalMode('confirm');
+        setPinLoading(false);
+        return; // mantém modal aberto para confirmar
+      }
+
+      // Modo confirm: reenviar compra com PIN
+      const retry = new URLSearchParams(pendingParams);
+      retry.set('pin', pin);
+      await api.post('/pedidos/criar/', retry, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      setPinModalOpen(false);
+      toast({ title: 'Pedido enviado com sucesso!' });
+    } catch (e) {
+      const msg = e?.response?.data?.detail || 'Não foi possível concluir com PIN';
+      toast({ title: 'Erro', description: msg });
+    } finally {
+      setPinLoading(false);
     }
   }
 
@@ -393,6 +476,9 @@ export default function ProductPage() {
       })
       return
     }
+    if(!text || !text.trim()){
+      return;
+    }
     setIsCommenting(true)
     const formData = new FormData(); 
     formData.append('produto_slug', product.slug);
@@ -402,9 +488,10 @@ export default function ProductPage() {
       text: text,
       date: "agora mesmo", 
       user: {
-        id: user?.id, 
-        name: user?.name, 
-        avatar: user?.perfil, 
+        id: user?.id,
+        name: user?.name || user?.username,
+        username: user?.username,
+        avatar: user?.perfil || 'avatar.png',
       },
     };
     api.post(`/comentarios/`, formData,{
@@ -432,6 +519,13 @@ export default function ProductPage() {
 
   return (
     <div className="fixed inset-0  lg:static overflow-y-scroll max_z_index_2xl md:z-50">
+      <PinModal
+        open={pinModalOpen}
+        mode={pinModalMode}
+        loading={pinLoading}
+        onClose={() => setPinModalOpen(false)}
+        onSubmit={handlePinModalSubmit}
+      />
       <div className="max-w-[1440px] mx-auto lg:px-0 sm:w-full">
         <div className="flex flex-col lg:flex-row gap-0 relative ">
           <div className="flex-1 h-full">
