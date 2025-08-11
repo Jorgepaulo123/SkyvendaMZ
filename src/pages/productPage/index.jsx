@@ -322,7 +322,7 @@ export default function ProductPage() {
       });
 
       // Usando o endpoint correto conforme a documentação
-      api.post('/pedidos/criar/', params, {
+      api.post('/pedidos/criar', params, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -364,7 +364,7 @@ export default function ProductPage() {
       });
 
       // Usando o endpoint correto conforme a documentação
-      api.post('/pedidos/pedidos/criar/', params, {
+      api.post('/pedidos/criar', params, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -433,7 +433,7 @@ export default function ProductPage() {
       // Modo confirm: reenviar compra com PIN
       const retry = new URLSearchParams(pendingParams);
       retry.set('pin', pin);
-      await api.post('/pedidos/criar/', retry, {
+      await api.post('/pedidos/criar', retry, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/x-www-form-urlencoded'
