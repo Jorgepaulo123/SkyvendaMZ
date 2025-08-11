@@ -335,10 +335,8 @@ export default function ProductPage() {
         });
       }).catch(err => {
         console.error('Erro ao processar pedido normal:', err.response?.data || err.message);
-        toast({
-          title: "😢 Erro",
-          description: err.response?.data?.detail || "Ocorreu um erro ao processar o pedido",
-        });
+        const msg = err?.userMessage || err?.response?.data?.detail || err?.message || "Ocorreu um erro ao processar o pedido";
+        toast({ title: "😢 Erro", description: msg });
       }).finally(() => setLoadingpedido(false));
     }
   }
@@ -377,15 +375,13 @@ export default function ProductPage() {
         });
       }).catch(async err => {
         console.error('Erro ao processar pedido skywallet:', err.response?.data || err.message);
-        const detail = err.response?.data?.detail || '';
+        const detail = err?.response?.data?.detail || '';
         // Se o backend exigir PIN, abrir fluxo de PIN
         if (err.response?.status === 400 && String(detail).toLowerCase().includes('pin')) {
           await handlePinAndRetryPurchase(params);
         } else {
-          toast({
-            title: "😢 Erro",
-            description: detail || "Ocorreu um erro ao processar o pedido",
-          });
+          const msg = err?.userMessage || detail || err?.message || "Ocorreu um erro ao processar o pedido";
+          toast({ title: "😢 Erro", description: msg });
         }
       }).finally(() => setBuyLoading(false));
     }
@@ -442,7 +438,7 @@ export default function ProductPage() {
       setPinModalOpen(false);
       toast({ title: 'Pedido enviado com sucesso!' });
     } catch (e) {
-      const msg = e?.response?.data?.detail || 'Não foi possível concluir com PIN';
+      const msg = e?.userMessage || e?.message || 'Não foi possível concluir com PIN';
       toast({ title: 'Erro', description: msg });
     } finally {
       setPinLoading(false);

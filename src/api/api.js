@@ -28,6 +28,29 @@ api.interceptors.request.use(function (config) {
     return Promise.reject(error);
 });
 
+// Helper to extract a user-friendly error message from FastAPI/Pydantic responses
+function extractErrorMessage(err) {
+    try {
+        const res = err?.response;
+        if (!res) return err?.message || 'Erro de rede';
+        const data = res.data;
+        // Common FastAPI shapes: {detail: '...'} or {detail: [{loc, msg, type, input?}, ...]}
+        if (data?.detail) {
+            if (typeof data.detail === 'string') return data.detail;
+            if (Array.isArray(data.detail)) {
+                const msgs = data.detail.map(d => d?.msg || JSON.stringify(d)).filter(Boolean);
+                if (msgs.length) return msgs.join('; ');
+            }
+        }
+        // Fallbacks
+        if (data?.message) return data.message;
+        if (typeof data === 'string') return data;
+        return `Erro ${res.status}: ${res.statusText || 'Requisição falhou'}`;
+    } catch (_) {
+        return 'Ocorreu um erro inesperado';
+    }
+}
+
 // Add a response interceptor to handle common errors
 api.interceptors.response.use(
     response => response,
@@ -58,6 +81,8 @@ api.interceptors.response.use(
             console.error('API Error Setup:', error.message);
         }
         
+        // Attach normalized message to be safe for UI/toast usage
+        error.userMessage = extractErrorMessage(error);
         return Promise.reject(error);
     }
 );
