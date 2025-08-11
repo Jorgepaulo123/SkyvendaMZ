@@ -115,7 +115,8 @@ export default function WithdrawForm() {
       resetForm();
     } catch (error) {
       console.error('Erro ao confirmar PIN/saque:', error);
-      setErrorMessage(error.response?.data?.detail || 'Não foi possível concluir o saque.');
+      const msg = error?.userMessage || error?.response?.data?.detail || error?.message || 'Não foi possível concluir o saque.';
+      setErrorMessage(String(msg));
     } finally {
       setPinLoading(false);
       setIsProcessing(false);
