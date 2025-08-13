@@ -23,6 +23,27 @@ api.interceptors.request.use(function (config) {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Always attach a Request ID for traceability
+    try {
+        const reqId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+        config.headers['X-Request-ID'] = config.headers['X-Request-ID'] || reqId;
+    } catch (_) {
+        // noop
+    }
+
+    // Auto-generate Idempotency-Key for payment endpoint if missing
+    try {
+        const isPost = (config.method || '').toLowerCase() === 'post';
+        const url = (config.url || '').toString();
+        const isPagamento = /\/usuario\/.+\/pagamento\/?/.test(url);
+        if (isPost && isPagamento && !config.headers['Idempotency-Key']) {
+            const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+            config.headers['Idempotency-Key'] = idem;
+        }
+    } catch (_) {
+        // noop
+    }
     return config;
 }, function (error) {
     return Promise.reject(error);

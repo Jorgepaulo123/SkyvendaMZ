@@ -5,6 +5,7 @@ import { SiMoneygram } from 'react-icons/si';
 import { toast } from 'react-hot-toast';
 import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
+import PinModal from '../modals/PinModal';
 
 export default function DepositForm() {
   const { token, user } = useAuth();
@@ -19,7 +20,10 @@ export default function DepositForm() {
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
   const [step, setStep] = useState(1);
-  
+  const [pinOpen, setPinOpen] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
   const resetForm = () => {
     setDepositAmount('');
     setPhoneNumber('');
@@ -74,15 +78,12 @@ export default function DepositForm() {
         if (!user?.id) {
           throw new Error('ID do usuário não encontrado');
         }
-        const url = `/usuario/${user.id}/adicionar_saldo/?msisdn=258${phoneNumber}&valor=${depositAmount}`;
-        const response = await api.post(url, {}, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        // Guardar dados e abrir modal do PIN
+        setPendingData({
+          msisdn: `258${phoneNumber}`,
+          valor: parseInt(depositAmount, 10)
         });
-        toast.success(`Depósito de ${depositAmount} MTn iniciado com sucesso!`);
-        setSuccessMessage(`Depósito de ${depositAmount} MTn iniciado com sucesso! Aguarde a confirmação.`);
-        resetForm();
+        setPinOpen(true);
       } else {
         // Simulação de processamento para outros métodos
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -99,6 +100,32 @@ export default function DepositForm() {
         setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
       }
     } finally {
+      // mantém loading até fechar o modal ou concluir
+    }
+  };
+
+  const handlePinSubmit = async (pin) => {
+    try {
+      setPinLoading(true);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      };
+      const params = new URLSearchParams();
+      params.set('msisdn', pendingData.msisdn);
+      params.set('valor', String(pendingData.valor));
+      params.set('pin', pin);
+      await api.post(`/usuario/${user.id}/pagamento/`, params, { headers });
+      toast.success(`Depósito de ${pendingData.valor} MTn iniciado com sucesso!`);
+      setSuccessMessage(`Depósito de ${pendingData.valor} MTn iniciado com sucesso! Aguarde a confirmação.`);
+      setPinOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('Erro ao confirmar PIN/depósito:', error);
+      const msg = error?.userMessage || error?.response?.data?.detail || error?.message || 'Não foi possível iniciar o depósito.';
+      setErrorMessage(String(msg));
+    } finally {
+      setPinLoading(false);
       setIsProcessing(false);
     }
   };
@@ -137,6 +164,13 @@ export default function DepositForm() {
 
   return (
     <div className="space-y-6">
+      <PinModal
+        open={pinOpen}
+        mode="confirm"
+        onClose={() => { setPinOpen(false); setIsProcessing(false); }}
+        onSubmit={handlePinSubmit}
+        loading={pinLoading}
+      />
       {successMessage && (
         <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 flex items-start">
           <div className="flex-shrink-0 mr-3">

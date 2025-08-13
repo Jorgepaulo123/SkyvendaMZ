@@ -129,6 +129,30 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, [token]);
 
+  // Atualiza dados do usuário sob demanda (ex: saldo após eventos)
+  const refreshUser = async () => {
+    if (!token) return null;
+    try {
+      const response = await api.get('/usuario/user', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(response.data);
+      setIsAuthenticated(true);
+      return response.data;
+    } catch (error) {
+      console.error('Falha ao atualizar usuário', error);
+      if (error?.response?.status === 401) logout();
+      return null;
+    }
+  };
+
+  // Escuta eventos globais para atualizar saldo imediatamente
+  useEffect(() => {
+    const onRefresh = () => { refreshUser(); };
+    window.addEventListener('wallet:refresh-balance', onRefresh);
+    return () => window.removeEventListener('wallet:refresh-balance', onRefresh);
+  }, [token]);
+
   // Redireciona para a página inicial após o login
   useEffect(() => {
     if (!loading && isAuthenticated && user && window.location.pathname === '/login') {
@@ -179,7 +203,8 @@ export const AuthProvider = ({ children }) => {
       getToken, 
       setToken, 
       isAuthenticated,
-      activatePro
+      activatePro,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

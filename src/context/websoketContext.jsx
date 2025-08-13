@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { useAuth } from "./AuthContext";
 import { base_url } from "../api/api";
 import api from "../api/api";
+import { toast } from 'react-hot-toast';
 
 const WebSocketContext = createContext(null);
 
@@ -416,6 +417,21 @@ export const WebSocketProvider = ({ children }) => {
           setNewMessage(prev => prev + 1);
           handleIncomingMessage(data.data);
           break;
+        // Eventos financeiros: atualizar saldo em tempo real e avisar o usuário
+        case 'payment_success':
+        case 'deposit_success':
+        case 'withdrawal_success': {
+          window.dispatchEvent(new CustomEvent('wallet:refresh-balance', { detail: data }));
+          toast.success(data?.message || 'Operação concluída. Seu saldo foi atualizado.');
+          break;
+        }
+        case 'payment_failed':
+        case 'deposit_failed':
+        case 'withdrawal_failed': {
+          window.dispatchEvent(new CustomEvent('wallet:refresh-balance', { detail: data }));
+          toast.error(data?.message || 'Não foi possível concluir a operação.');
+          break;
+        }
         case 'typing':
           setUserTyping(data.data.username);
           setTimeout(() => setUserTyping(null), 3000);
@@ -458,10 +474,11 @@ export const WebSocketProvider = ({ children }) => {
         case 'order_status':
           console.log('Recebido status do pedido:', data.data);
           // Aqui podemos adicionar lógica para atualizar o status do pedido se necessário
-          toast({
-            title: data.data.success ? "✨ Sucesso!" : "😢 Erro",
-            description: data.data.message || (data.data.success ? "Pedido processado com sucesso!" : "Erro ao processar pedido"),
-          });
+          if (data.data.success) {
+            toast.success(data.data.message || 'Pedido processado com sucesso!');
+          } else {
+            toast.error(data.data.message || 'Erro ao processar pedido');
+          }
           break;
         default:
           console.log('Unknown message type:', data);

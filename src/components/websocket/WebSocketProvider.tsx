@@ -212,7 +212,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         // Atualizar última mensagem
         setLastMessage(data);
         
-        // Processar notificações
+        // Processar notificações gerais
         if (data.type === 'notification' || data.type === 'notification_update' || data.type === 'notifications_update') {
           console.log('WebSocket: Processando notificação do tipo:', data.type);
           
@@ -297,6 +297,53 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           });
           window.dispatchEvent(notificationEvent);
           console.log('WebSocket: Evento disparado com sucesso');
+        }
+
+        // Processar eventos financeiros para atualizar saldo em tempo real
+        const financialTypes = new Set([
+          'payment_success',
+          'payment_failed',
+          'withdrawal_success',
+          'withdrawal_failed',
+          'deposit_success',
+          'deposit_failed',
+        ]);
+
+        if (financialTypes.has(data.type)) {
+          // Atualiza saldo global
+          console.log('WebSocket: Evento financeiro recebido, atualizando saldo:', data.type);
+          window.dispatchEvent(new CustomEvent('wallet:refresh-balance', { detail: data }));
+
+          // Toast amigável
+          const success = data.type.endsWith('success');
+          toast(
+            <div className="flex items-start p-1">
+              <div className="flex-shrink-0 pt-0.5">
+                <div className={`h-10 w-10 rounded-full ${success ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center shadow-lg`}>
+                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d={success ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'} />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">{data.title || (success ? 'Operação concluída' : 'Operação falhou')}</p>
+                <p className="mt-1 text-sm text-gray-500">{data.message || (success ? 'Seu saldo foi atualizado.' : 'Não foi possível concluir a operação.')}</p>
+              </div>
+            </div>,
+            {
+              duration: 5000,
+              position: 'top-right',
+              style: {
+                background: '#fff',
+                color: '#000',
+                padding: '16px',
+                borderRadius: '10px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                maxWidth: '350px',
+                border: '1px solid #f0f0f0'
+              },
+            }
+          );
         }
       } catch (error) {
         console.error('WebSocket: Erro ao processar mensagem:', error);
