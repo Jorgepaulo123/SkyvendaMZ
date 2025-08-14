@@ -43,7 +43,7 @@ export default function PromocoesCarousel({ embedded=false }) {
           {produtos.map((p) => (
             <div key={p.id} className="min-w-[160px] max-w-[85vw] sm:max-w-none snap-start flex-shrink-0 cursor-pointer" onClick={()=>navigate(`/produto/${p.slug || p.id}`)}>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
-                <img src={p.imagem_principal || p.imagem || 'https://via.placeholder.com/160x120'} alt={p.nome}
+                <img src={p.imagem_principal || p.imagem || '/default.png'} alt={p.nome}
                      className="w-full h-[120px] rounded-lg object-cover mb-2"/>
                 <p className="text-sm font-semibold text-gray-800 line-clamp-2">{p.nome}</p>
                 <div className="mt-1 flex items-end gap-2">

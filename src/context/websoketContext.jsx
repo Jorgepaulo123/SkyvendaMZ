@@ -432,29 +432,34 @@ export const WebSocketProvider = ({ children }) => {
           toast.error(data?.message || 'Não foi possível concluir a operação.');
           break;
         }
-        case 'typing':
-          setUserTyping(data.data.username);
+        case 'typing': {
+          const uname = data?.data?.username || null;
+          setUserTyping(uname);
           setTimeout(() => setUserTyping(null), 3000);
           break;
-        case 'recording':
-          setUserRecording(data.data.status === 'start' ? data.data.username : null);
+        }
+        case 'recording': {
+          const status = data?.data?.status;
+          const uname = data?.data?.username || null;
+          setUserRecording(status === 'start' ? uname : null);
           break;
+        }
         case 'user_status':
           // Atualizar status do usuário (online/offline)
-          if (data.data.status === 'online') {
+          if (data?.data?.status === 'online') {
             setOnlineUsers(prev => {
               if (prev.some(u => u.id === data.data.user_id)) {
                 return prev.map(u => u.id === data.data.user_id ? 
                   {...u, last_seen: new Date().toISOString()} : u);
               }
               return [...prev, { 
-                id: data.data.user_id, 
-                username: data.data.username,
+                id: data?.data?.user_id, 
+                username: data?.data?.username,
                 last_seen: new Date().toISOString()
               }];
             });
-          } else if (data.data.status === 'offline') {
-            setOnlineUsers(prev => prev.filter(u => u.id !== data.data.user_id));
+          } else if (data?.data?.status === 'offline') {
+            setOnlineUsers(prev => prev.filter(u => u.id !== data?.data?.user_id));
           }
           break;
         case 'message_status':

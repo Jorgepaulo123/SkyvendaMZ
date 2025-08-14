@@ -19,7 +19,7 @@ function PublicationCard({ pub }) {
 
   const usr = pub.publicador || pub.usuario || {};
   const avatarRaw = usr?.foto_perfil || usr?.avatar || usr?.foto || usr?.avatar_url || '';
-  let avatarSrc = 'https://via.placeholder.com/32';
+  let avatarSrc = '/avatar.png';
   if (typeof avatarRaw === 'string' && avatarRaw.length > 0) {
     if (avatarRaw.startsWith('http') || avatarRaw.startsWith('/')) avatarSrc = avatarRaw;
   }
@@ -40,7 +40,7 @@ function PublicationCard({ pub }) {
         {/* header */}
         {usr && (
           <Link to={`/${usr.username || usr.id}`} className="flex items-center gap-2 mb-2">
-            <img src={avatarSrc} onError={e=>e.target.src='https://via.placeholder.com/32'} alt={usr.nome}
+            <img src={avatarSrc} onError={e=>e.target.src='/avatar.png'} alt={usr.nome}
                  className="w-8 h-8 rounded-full border-2 border-white"/>
             <span className="text-sm font-semibold drop-shadow-md">{usr.nome}</span>
             {(() => {

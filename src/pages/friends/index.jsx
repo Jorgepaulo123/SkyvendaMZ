@@ -104,12 +104,12 @@ export default function Friends() {
                   <div className="flex items-center gap-3">
                     <Link to={`/${nhonguista.username}`}>
                       <img 
-                        src={nhonguista.foto_perfil || 'https://via.placeholder.com/64'} 
+                        src={nhonguista.foto_perfil || '/avatar.png'} 
                         alt={nhonguista.name} 
                         className="w-16 h-16 rounded-full object-cover border border-gray-200"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/64';
+                          e.target.src = '/avatar.png';
                         }}
                       />
                     </Link>

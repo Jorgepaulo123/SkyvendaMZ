@@ -12,7 +12,8 @@ function Banner() {
           </button>
         </div>
         <div className="md:w-1/2">
-          <img src="https://via.placeholder.com/500x300" alt="Banner" className="rounded-lg shadow-lg" />
+          <img src="/default.png" alt="Banner" className="rounded-lg shadow-lg" />
+
         </div>
       </div>
     </div>

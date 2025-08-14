@@ -52,10 +52,10 @@ export default function NhonguistasCarousel({ embedded=false }) {
               onClick={() => navigate(`/${v.username || v.identificador_unico || v.id}`)}
             >
               <img
-                src={v.foto_perfil || v.avatar || v.foto || 'https://via.placeholder.com/100'}
+                src={v.foto_perfil || v.avatar || v.foto || '/avatar.png'}
                 alt={v.nome || v.name}
                 className="w-[100px] h-[100px] rounded-full object-cover border-2 border-indigo-500 mb-2 max-w-full"
-                onError={e => (e.target.src = 'https://via.placeholder.com/100')}
+                onError={e => (e.target.src = '/avatar.png')}
               />
               <p className="text-sm font-medium text-gray-700 truncate w-[100px] mx-auto">{v.nome || v.name || v.username}</p>
             </div>

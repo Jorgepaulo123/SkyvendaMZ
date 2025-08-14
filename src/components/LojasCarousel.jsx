@@ -42,9 +42,9 @@ export default function LojasCarousel({ embedded=false }) {
         <div ref={containerRef} className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory scrollbar-hide touch-pan-x overscroll-x-contain w-full max-w-full">
           {lojas.map((l) => (
             <div key={l.id} className="min-w-[140px] max-w-[75vw] sm:max-w-none snap-start flex-shrink-0 cursor-pointer text-center" onClick={()=>navigate(`/lojas/${l.slug || l.id}`)}>
-              <img src={l.logo || l.imagem || 'https://via.placeholder.com/120'} alt={l.nome}
+              <img src={l.logo || l.imagem || '/default.png'} alt={l.nome}
                    className="w-[120px] h-[120px] rounded-xl object-cover border-2 border-orange-400 mb-2 max-w-full"
-                   onError={(e)=>{e.currentTarget.src='https://via.placeholder.com/120';}}/>
+                   onError={(e)=>{e.currentTarget.src='/default.png';}}/>
               <p className="text-sm font-medium text-gray-700 truncate w-[120px] mx-auto">{l.nome}</p>
             </div>
           ))}

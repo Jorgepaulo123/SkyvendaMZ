@@ -100,7 +100,7 @@ const ProductCard2 = ({ product }) => {
       <div className="p-3 flex items-start gap-2 relative">
         <img
           src={product.user?.avatar}
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/40x40'; }}
+          onError={(e) => { e.target.src = '/avatar.png'; }}
           className="w-8 h-8 rounded-full cursor-pointer flex-shrink-0"
           alt={product.user?.name}
           onClick={() => navigate(`/${product.user?.username}`)}
@@ -183,7 +183,7 @@ const ProductCard2 = ({ product }) => {
         <img
           src={product.thumb}
           onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/400x300';
+            e.target.src = '/default.png';
           }}
           alt={product.title}
           className="h-full w-full object-cover object-center hover:scale-105 transition-transform duration-500"

@@ -853,7 +853,7 @@ export default function Profile() {
                                                             <div key={publicacao.id} className="bg-white rounded-lg shadow-md p-4">
                                                                 <div className="flex items-center gap-3 mb-3">
                                                                     <img 
-                                                                        src={publicacao.publicador.foto_perfil || 'https://via.placeholder.com/40'} 
+                                                                        src={publicacao.publicador.foto_perfil || '/avatar.png'} 
                                                                         alt={publicacao.publicador.nome}
                                                                         className="w-10 h-10 rounded-full object-cover"
                                                                     />
@@ -882,7 +882,7 @@ export default function Profile() {
                                                                         {publicacao.comentarios.map((comentario) => (
                                                                             <div key={comentario.id} className="flex gap-2 mb-2">
                                                                                 <img 
-                                                                                    src={comentario.usuario.foto_perfil || 'https://via.placeholder.com/30'} 
+                                                                                    src={comentario.usuario.foto_perfil || '/avatar.png'} 
                                                                                     alt={comentario.usuario.nome}
                                                                                     className="w-7 h-7 rounded-full object-cover"
                                                                                 />
@@ -919,7 +919,7 @@ export default function Profile() {
                                                             {seguidores.map((seguidor) => (
                                                                 <div key={seguidor.id} className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3">
                                                                     <img 
-                                                                        src={seguidor.foto_perfil || 'https://via.placeholder.com/50'} 
+                                                                        src={seguidor.foto_perfil || '/avatar.png'} 
                                                                         alt={seguidor.nome}
                                                                         className="w-12 h-12 rounded-full object-cover"
                                                                     />

@@ -110,12 +110,12 @@ export default function MobileMenu() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img 
-                      src={user?.perfil || 'https://via.placeholder.com/40'} 
+                      src={user?.perfil || '/avatar.png'}
                       alt="Foto de perfil" 
                       className="w-10 h-10 rounded-full object-cover border border-gray-200" 
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/40';
+                        e.target.src = '/avatar.png';
                       }}
                     />
                     <div className="flex flex-col">
@@ -186,12 +186,12 @@ export default function MobileMenu() {
                         className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
                       >
                         <img 
-                          src={nhonguista.foto_perfil || 'https://via.placeholder.com/40'} 
+                          src={nhonguista.foto_perfil || '/avatar.png'}
                           alt={nhonguista.name} 
                           className="w-12 h-12 rounded-full object-cover border border-gray-200"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/40';
+                            e.target.src = '/avatar.png';
                           }}
                         />
                         <div className="flex-1">

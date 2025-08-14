@@ -45,6 +45,28 @@ export default function MessageItem({ message, audioStates = {}, onToggleAudio }
         e.stopPropagation();
     };
 
+    // Transforma URLs em links clicáveis sem usar HTML bruto
+    const linkify = useCallback((text) => {
+        if (!text || typeof text !== 'string') return null;
+        const parts = text.split(/(https?:\/\/\S+)/gi);
+        const isUrl = (s) => /^https?:\/\/\S+$/i.test(s);
+        return parts.map((part, idx) =>
+            isUrl(part) ? (
+                <a
+                    key={`lk-${idx}`}
+                    href={part}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-600 underline break-words"
+                >
+                    {part}
+                </a>
+            ) : (
+                <span key={`tx-${idx}`} className="break-words whitespace-pre-wrap">{part}</span>
+            )
+        );
+    }, []);
+
     // Renderiza o status da mensagem
     const renderMessageStatus = () => {
         if (isUploading) {
@@ -175,7 +197,7 @@ export default function MessageItem({ message, audioStates = {}, onToggleAudio }
                             onClick={openImageViewer}
                         />
                         {message.content && (
-                            <div className="text-inherit">{message.content}</div>
+                            <div className="text-inherit break-words whitespace-pre-wrap">{linkify(message.content)}</div>
                         )}
                     </div>
                 ) : null;
@@ -191,7 +213,11 @@ export default function MessageItem({ message, audioStates = {}, onToggleAudio }
                     </a>
                 ) : null;
             default:
-                return message.content;
+                return (
+                    <div className="text-inherit break-words whitespace-pre-wrap">
+                        {linkify(message.content)}
+                    </div>
+                );
         }
     };
 

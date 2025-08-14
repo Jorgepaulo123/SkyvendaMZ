@@ -181,7 +181,7 @@ export default function InputSearchMobile() {
                     className="w-16 h-16 object-cover rounded-md"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/64';
+                      e.target.src = '/avatar.png';
                     }}
                   />
                   <div>
