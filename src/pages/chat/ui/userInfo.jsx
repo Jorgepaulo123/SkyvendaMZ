@@ -32,13 +32,13 @@ export default function UserInfoSidebar({
         <div className="flex flex-col items-center gap-4">
           <div className="flex p-4 md:p-8 w-full flex-col items-center gap-4">
             <img 
-              src={selectedUser?.foto}
-              alt={selectedUser?.nome}
+              src={selectedUser?.foto || '/avatar.png'}
+              alt={selectedUser?.nome || 'perfil'}
               className="w-[120px] h-[120px] md:w-[200px] md:h-[200px] rounded-full"
-              onError={(e) => e.target.src = `${base_url}/avatar.png`}
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/avatar.png'; }}
             />
-            <Link to={`/${selectedUser?.username}`} className='font-bold text-xl md:text-2xl hover:underline hover:text-indigo-500'>
-              {selectedUser?.nome}
+            <Link to={`/${selectedUser?.username || ''}`} className='font-bold text-xl md:text-2xl hover:underline hover:text-indigo-500'>
+              {selectedUser?.nome || '—'}
             </Link>
           </div>
 

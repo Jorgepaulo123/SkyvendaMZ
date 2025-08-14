@@ -67,7 +67,8 @@ export default function Security() {
       await axios.post(`https://skyvendamz-1.onrender.com/pin/configurar`, 
         {
           pin: newPin,
-          pin_ativo: pinConfig.pin_ativo,
+          // Ao configurar um PIN pela primeira vez, ativamos o PIN automaticamente
+          pin_ativo: true,
           requer_pin_transferencia: pinConfig.requer_pin_transferencia,
           requer_pin_visualizacao: pinConfig.requer_pin_visualizacao,
           valor_minimo_pin: parseFloat(pinConfig.valor_minimo_pin)
@@ -205,7 +206,12 @@ export default function Security() {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">PIN de Segurança</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold text-gray-800">PIN de Segurança</h2>
+                <span className={`text-xs px-2 py-1 rounded-full border ${pinConfig.pin_ativo ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                  {pinConfig.pin_ativo ? 'Ativo' : 'Inativo'}
+                </span>
+              </div>
               <p className="text-gray-500 mt-1">Configure o PIN para proteger sua carteira e transações</p>
             </div>
             <div className="flex items-center">

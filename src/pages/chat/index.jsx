@@ -832,19 +832,19 @@ export default function Chat() {
                     onClick={handleBackClick}
                   />
                   <img 
-                    src={selectedUser.foto}
-                    alt={selectedUser.nome}
-                    onError={(e) => e.target.src = `http://skyvenda-mz.vercel.app/avatar.png`}
+                    src={selectedUser?.foto || '/avatar.png'}
+                    alt={selectedUser?.nome || 'perfil'}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/avatar.png'; }}
                     className="w-8 h-8 md:w-10 md:h-10 rounded-full"
                   />
-                  <Link to={`/${selectedUser.username}`} className='font-semibold hover:underline hover:text-indigo-500'>
-                    {selectedUser.nome}
+                  <Link to={`/${selectedUser?.username || ''}`} className='font-semibold hover:underline hover:text-indigo-500'>
+                    {selectedUser?.nome || '—'}
                   </Link>
-                  {userTyping === selectedUser.username && (
+                  {selectedUser?.username && userTyping === selectedUser.username && (
                     <span className="text-sm text-skyvenda-500">digitando...</span>
                   )}
 
-                  {userRecording === selectedUser.username && (
+                  {selectedUser?.username && userRecording === selectedUser.username && (
                     <span className="text-sm text-skyvenda-500">gravando...</span>
                   )}
                 </div>

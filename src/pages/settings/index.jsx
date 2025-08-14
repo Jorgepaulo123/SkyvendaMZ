@@ -9,9 +9,9 @@ function SettingsPage() {
       title: "Conta e Perfil",
       icon: <UserCircle className="w-5 h-5 text-blue-500" />,
       items: [
-        { label: "Mudar Nome", path: "/settings/profile" },
-        { label: "Adicionar Email", path: "/settings/add-email" },
-        { label: "Mudar Email", path: "/settings/change-email" }
+        { label: "Mudar Nome", path: "/settings/profile", disabled: true },
+        { label: "Adicionar Email", path: "/settings/add-email", disabled: true },
+        { label: "Mudar Email", path: "/settings/change-email", disabled: true }
       ]
     },
     {
@@ -26,14 +26,14 @@ function SettingsPage() {
       title: "Privacidade",
       icon: <LockKeyhole className="w-5 h-5 text-purple-500" />,
       items: [
-        { label: "Bloquear Utilizadores", path: "/settings/blocked" }
+        { label: "Bloquear Utilizadores", path: "/settings/blocked", disabled: true }
       ]
     },
     {
       title: "Notificações",
       icon: <Bell className="w-5 h-5 text-amber-500" />,
       items: [
-        { label: "Preferências de Notificações", path: "/settings/notifications" }
+        { label: "Preferências de Notificações", path: "/settings/notifications", disabled: true }
       ]
     }
   ];
@@ -64,13 +64,19 @@ function SettingsPage() {
               {section.items.map((item, itemIndex) => (
                 <button 
                   key={itemIndex}
-                  onClick={() => navigate(item.path)}
-                  className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-all border-b last:border-b-0"
+                  onClick={() => { if (!item.disabled) navigate(item.path); }}
+                  className={`w-full px-4 py-4 flex items-center justify-between transition-all border-b last:border-b-0 ${item.disabled ? 'cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50'}`}
+                  disabled={item.disabled}
                 >
-                  <span className="text-gray-700">{item.label}</span>
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span className={`text-gray-700 ${item.disabled ? 'opacity-50' : ''}`}>{item.label}</span>
+                  <div className="flex items-center gap-2">
+                    {item.disabled && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500 border">Indisponível</span>
+                    )}
+                    <svg className={`w-5 h-5 ${item.disabled ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </button>
               ))}
             </div>

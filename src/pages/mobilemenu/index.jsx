@@ -63,19 +63,28 @@ export default function MobileMenu() {
       setProductCount(myproducts?.length || 0);
     }
     
-    // Buscar nhonguistas e lojas
+    // Buscar nhonguistas e lojas que o usuário segue
     setLoadingNhonguistas(true);
     if (user?.id_unico) {
-      api.get(`usuario/usuarios/lojas?skip=0&limit=5&identificador_unico=${user?.id_unico}`)
-        .then(res => {
+      const fetchSeguindo = async () => {
+        try {
+          // 1) Tenta endpoint de "seguindo"
+          const resSeguindo = await api.get(`usuario/seguindo?skip=0&limit=5&identificador_unico=${user?.id_unico}`);
+          const lista = Array.isArray(resSeguindo.data?.usuarios) ? resSeguindo.data.usuarios : resSeguindo.data || [];
+          if (lista.length) {
+            setNhonguistas(lista);
+            return;
+          }
+          // 2) Fallback para endpoint existente
+          const res = await api.get(`usuario/usuarios/lojas?skip=0&limit=5&identificador_unico=${user?.id_unico}`);
           setNhonguistas(res.data.usuarios || []);
-        })
-        .catch(err => {
-          console.error('Erro ao buscar nhonguistas:', err.message);
-        })
-        .finally(() => {
+        } catch (err) {
+          console.error('Erro ao buscar seguidos:', err.message);
+        } finally {
           setLoadingNhonguistas(false);
-        });
+        }
+      };
+      fetchSeguindo();
     } else {
       setLoadingNhonguistas(false);
     }
@@ -195,7 +204,14 @@ export default function MobileMenu() {
                           }}
                         />
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-800">{nhonguista.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-gray-800">{nhonguista.name}</h3>
+                            {nhonguista.tipo && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${nhonguista.tipo?.toLowerCase() === 'loja' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                {nhonguista.tipo}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500">@{nhonguista.username}</p>
                         </div>
                         <div className="flex flex-col items-end">
