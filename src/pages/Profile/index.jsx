@@ -10,6 +10,63 @@ import { base_url } from '../../api/api';
 import Pedidos from '../pedidos';
 import toast from 'react-hot-toast';
 
+// Components de carregamento (top-level)
+const LoadingSpinner = ({ label = 'Carregando...' }) => (
+  <div className="flex items-center gap-2 text-sm text-gray-500">
+    <Loader className="w-4 h-4 animate-spin text-indigo-500" />
+    <span>{label}</span>
+  </div>
+);
+
+const LoadingProfile = () => (
+  <div className="w-full min-h-screen bg-gray-50">
+    {/* Capa */}
+    <div className="relative h-48 md:h-56 w-full">
+      <div className="w-full h-full bg-gradient-to-r from-indigo-100 to-purple-100" />
+      <div className="absolute inset-0 bg-black/10" />
+    </div>
+
+    <div className="w-full mx-auto px-3 sm:px-4 -mt-20 md:-mt-24 pb-6">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="p-5">
+          {/* Avatar e ações */}
+          <div className="flex flex-col items-center">
+            <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-gray-200 animate-pulse border-4 border-white shadow -mt-2" />
+            <div className="mt-3 h-5 w-40 bg-gray-200 rounded animate-pulse" />
+            <div className="mt-2 h-4 w-24 bg-gray-100 rounded animate-pulse" />
+
+            <div className="flex items-center gap-2 mt-4">
+              <div className="h-9 w-28 bg-indigo-100 rounded-md animate-pulse" />
+              <div className="h-9 w-28 bg-gray-100 rounded-md animate-pulse" />
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="h-14 bg-gray-50 rounded-lg animate-pulse" />
+            <div className="h-14 bg-gray-50 rounded-lg animate-pulse" />
+            <div className="h-14 bg-gray-50 rounded-lg animate-pulse" />
+          </div>
+        </div>
+
+        {/* Lista de produtos */}
+        <div className="border-t border-gray-100 px-5 py-4">
+          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mb-4" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="bg-gray-50 rounded-lg p-2">
+                <div className="w-full h-32 bg-gray-200 rounded-md animate-pulse" />
+                <div className="mt-2 h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                <div className="mt-2 h-4 w-1/2 bg-gray-100 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 export default function Profile() {
     const [hasProfile,setHasProfile]=useState(false);
     const [isMyProfile,setIsMyProfile]=useState(false);
@@ -439,7 +496,7 @@ export default function Profile() {
                 </div>
 
                     {loadingStats && (
-                        <div className="text-sm text-gray-500">Carregando...</div>
+                        <LoadingSpinner label="Carregando estatísticas..." />
                     )}
                 <div className="px-5 py-3 border-t flex justify-end">
                     <button onClick={() => setShowSettings(false)} className="px-4 py-2 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 text-sm">Fechar</button>
@@ -955,9 +1012,7 @@ export default function Profile() {
                         )}
                     </>
                 ) : (
-                    <div className="flex items-center justify-center min-h-screen">
-                        <p className="text-lg text-gray-500">🔄 Carregando...</p>
-                    </div>
+                    <LoadingProfile />
                 )}
 
         </div>
