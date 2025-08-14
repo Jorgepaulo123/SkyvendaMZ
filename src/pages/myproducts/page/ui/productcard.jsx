@@ -16,12 +16,15 @@ import { useAuth } from '../../../../context/AuthContext';
 import { useToast } from '../../../../hooks/use-toast';
 
 
-export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
+export default function ProductCard({ product, onEdit, onDelete, onTurbo, onProductUpdate }) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [updatingProduct, setUpdatingProduct] = useState(false);
     const { token } = useAuth();
     const {toast} = useToast();
+    // Normalize active and auto-renew flags from backend
+    const isActive = Boolean(product?.ativo ?? product?.active ?? false);
+    const isAutoRenew = Boolean(product?.autorenovacao ?? product?.auto_renovacao ?? product?.autoRenew ?? false);
 
     const handleCloseDialog = () => {
         setIsDialogOpen(false);
@@ -79,6 +82,35 @@ export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
         });
     };
 
+    const handleToggleAutoRenew = (product, enable) => {
+        setUpdatingProduct(true);
+        api.put(`/produtos/${product.id}/autorenovacao?autorenovacao=${enable}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        .then((res) => {
+            toast({
+                title: `Autorrenovação ${enable ? 'ativada' : 'desativada'} com sucesso`,
+            })
+
+            if (typeof onProductUpdate === 'function') {
+                onProductUpdate({
+                    ...product,
+                    autorenovacao: enable,
+                });
+            }
+        })
+        .catch((err) => {
+            toast({
+                title: 'Erro ao atualizar autorenovação',
+            })
+        })
+        .finally(() => {
+            setUpdatingProduct(false);
+        });
+    };
+
     function formatNumber(num) {
         if (num >= 1000000) {
             return (num / 1000000).toFixed(1) + 'M';
@@ -118,10 +150,10 @@ export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
                             <span
                                 className={`
                                     px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1
-                                    ${product.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                                    ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
                                 `}
                             >
-                                {product.active ? (
+                                {isActive ? (
                                     <>
                                         <CheckCircle2 className="w-3 h-3" />
                                         Activo
@@ -133,6 +165,12 @@ export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
                                     </>
                                 )}
                             </span>
+                            {isAutoRenew && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-blue-100 text-blue-800">
+                                    <RefreshCcw className="w-3 h-3" />
+                                    Autorenovação
+                                </span>
+                            )}
                         </div>
                         <h3
                             className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate"
@@ -159,9 +197,9 @@ export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onTurbo(product)} className="gap-2">
                             <Earth className="w-4 h-4" />
-                            Turbinar a boldada
+                            Turbinar a bolada
                             </DropdownMenuItem>
-                            {!product.ativo && (
+                            {!isActive && (
                                 <DropdownMenuItem 
                                     onClick={() => handleActivateProduct(product)} 
                                     className="gap-2"
@@ -171,6 +209,14 @@ export default function ProductCard({ product, onEdit, onDelete, onTurbo }) {
                                     {updatingProduct ? 'Ativando...' : 'Ativar a bolada'}
                                 </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem 
+                                onClick={() => handleToggleAutoRenew(product, !isAutoRenew)} 
+                                className="gap-2"
+                                disabled={updatingProduct}
+                            >
+                                <RefreshCcw className="w-4 h-4" />
+                                {isAutoRenew ? 'Desativar autorenovação' : 'Ativar autorenovação'}
+                            </DropdownMenuItem>
                             {!product.negociavel && (
                                 <DropdownMenuItem onClick={() => handleNegociar(product)} className="gap-2">
                                     <Handshake className="w-4 h-4" />

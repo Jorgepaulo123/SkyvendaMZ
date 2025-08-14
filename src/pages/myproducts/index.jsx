@@ -49,7 +49,14 @@ export default function MyProducts() {
     
   }
 
-
+  const handleProductUpdate = (updated) => {
+    if (!updated || typeof updated !== 'object') return;
+    addProducts((prev) => Array.isArray(prev)
+      ? prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+      : prev
+    );
+    setSelectedProduct((prev) => (prev && prev.id === updated.id ? { ...prev, ...updated } : prev));
+  };
 
   useEffect(() => {
     if (!token && myproducts) return;
@@ -79,7 +86,7 @@ export default function MyProducts() {
   return (
     <div className="p-4 overflow-hidden">
       {page === 1 ? (
-        <Page1 loading={loading} myproducts={myproducts} handleEdit={handleEdit} handleTurbo={handleTurbo}/>
+        <Page1 loading={loading} myproducts={myproducts} handleEdit={handleEdit} handleTurbo={handleTurbo} onProductUpdate={handleProductUpdate}/>
       ) : page==2 ?(
         <Page2
           selectedProduct={selectedProduct}
