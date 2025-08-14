@@ -527,13 +527,12 @@ export default function Profile() {
                 ) : !loading && hasProfile ? (
                     <>
                         {isMyProfile ?(
-                            <div className="container min-h-screen  lg:px-[140px] pb-[100px]">
+                            <div className="container min-h-screen px-4 sm:px-6 lg:px-[140px] pb-[100px]">
                             <div className="w-full">
                                 <div className="flex flex-col md:flex-row gap-4 flex-1">
                                     {/* area do avatar */}
                                     <div 
-                                        className="flex flex-col w-full items-center justify-center relative py-4 md:py-0 md:w-[282px] md:h-[182px]"
-                                        
+                                        className="flex flex-col w-full items-start justify-start md:items-center md:justify-start relative py-4 md:py-0 md:w-[282px] md:h-[182px]"
                                     >
                                         <div className="absolute -z-10 w-[120px] h-[120px] md:w-[155px] md:h-[155px] rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-400" />
                                         {uploading && (
@@ -566,26 +565,29 @@ export default function Profile() {
                                     </div>
 
                                     {/* area das opcoes e informacoes */}
-                                    <div className="w-full space-y-2 ">
-                                        <div className="flex py-2 md:h-[40px] gap-4 items-center flex-1 ">
-                                            <span className='text-2xl flex items-center gap-2'>
+                                    <div className="w-full space-y-3 ">
+                                        <div className="flex justify-between flex-wrap py-2 md:h-[40px] gap-3 items-center w-full ">
+                                            <span className='text-xl sm:text-2xl flex items-center gap-2'>
                                                 {userProfile.username}
                                                 {(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && (
                                                     <BadgeCheck className="w-5 h-5 text-sky-500" title="Conta PRO"/>
                                                 )}
                                             </span>
-                                            <Link to={'/accounts/edit'} className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Editar Perfil</Link>
-                                            {/* A ativação da conta PRO foi movida para o modal de Definições */}
-                                            <Link className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300'>Ver Publicaoes</Link>
-                                            <button onClick={openSettings} className='p-2 rounded-md hover:bg-gray-100'>
+                                            {/* ações: empilhar no mobile, lado a lado no >=sm */}
+                                            <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto ml-auto">
+                                              <Link to={'/accounts/edit'} className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 text-center w-full sm:w-auto'>Editar Perfil</Link>
+                                              {/* A ativação da conta PRO foi movida para o modal de Definições */}
+                                              <Link className='bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 text-center w-full sm:w-auto'>Ver Publicações</Link>
+                                            </div>
+                                            <button onClick={openSettings} className='ml-2 p-2 rounded-md hover:bg-gray-100'>
                                                 <Settings className='hover:animate-spin'/>
                                             </button>
                                         </div>
-
-                                        <div className="flex py-2 md:h-[40px] gap-4 items-center flex-1 ">
-                                            <span><span className='font-bold'>{userProfile.total_produtos}</span> publicacoes</span>
-                                            <span><span className='font-bold'>{userProfile.total_seguidores}</span> segudores</span>
-                                            <span><span className='font-bold'>{userProfile.total_seguindo || 0}</span> A seguir</span>
+                                        {/* métricas: 3 col grid no mobile */}
+                                        <div className="grid grid-cols-3 text-center py-2 md:h-[40px] gap-2 items-center flex-1 ">
+                                            <span className='text-sm'><span className='font-bold'>{userProfile.total_produtos}</span> publicações</span>
+                                            <span className='text-sm'><span className='font-bold'>{userProfile.total_seguidores}</span> seguidores</span>
+                                            <span className='text-sm'><span className='font-bold'>{userProfile.total_seguindo || 0}</span> a seguir</span>
                                         </div>
                                         <div className="">
                                             <p className='font-bold text-2xl'>{userProfile.name}</p>
@@ -597,16 +599,16 @@ export default function Profile() {
                                 <div className="flex h-[1px] bg-gray-300 mt-10 "></div>
                                 {/* tabs */}
                                 <div className="flex-1 gap-4">
-                                    <div className="flex flex-wrap gap-2 sm:gap-8 justify-center items-center overflow-x-auto">
-                                    <Link  to={`/${username}`} className={`uppercase transition-all duration-300 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-t-2  border-t-gray-900 "}`}><Grid className="w-4 h-4 sm:w-5 sm:h-5"/>Produtos</Link>
-                                    <Link to={`/${username}/orders`} className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/orders` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><ClipboardList className="w-4 h-4 sm:w-5 sm:h-5"/>Pedidos</Link>
-                                    <Link  to={`/${username}/publicacoes`}className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><FileText className="w-4 h-4 sm:w-5 sm:h-5"/>Publicações</Link>
-                                    <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100 gap-1 sm:gap-2 py-2 sm:py-3 flex text-xs sm:text-sm text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Users className="w-4 h-4 sm:w-5 sm:h-5"/>Seguidores</Link>
+                                    <div className="sticky top-0 bg-white z-10 -mx-4 px-4 flex gap-4 overflow-x-auto no-scrollbar border-b">
+                                      <Link  to={`/${username}`} className={`uppercase transition-all duration-300 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><Grid className="w-4 h-4 sm:w-5 sm:h-5"/>Produtos</Link>
+                                      <Link to={`/${username}/orders`} className={`uppercase transition-all duration-100 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/orders` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><ClipboardList className="w-4 h-4 sm:w-5 sm:h-5"/>Pedidos</Link>
+                                      <Link  to={`/${username}/publicacoes`}className={`uppercase transition-all duration-100 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><FileText className="w-4 h-4 sm:w-5 sm:h-5"/>Publicações</Link>
+                                      <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><Users className="w-4 h-4 sm:w-5 sm:h-5"/>Seguidores</Link>
                                     </div>
                                     {/* tabs content body */}
                                     <div className="flex-1">
                                         {tabSelected==`/${username}` &&(
-                                            <div className="grid grid-cols-3 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                                                 {loadingProducts ?(
                                                 <>
                                                     {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -650,9 +652,7 @@ export default function Profile() {
                                                 ))}
                                                     </>
                                                 ):(
-                                                    <div className="g">
-                                                        ainda nao tem produtos
-                                                    </div>
+                                                    <div className="col-span-2 sm:col-span-3 text-center text-sm text-gray-500 py-4">Ainda não tem produtos</div>
                                                 )}
 
                                                </> 
@@ -674,9 +674,9 @@ export default function Profile() {
                             {/* perfil publico */}
                            <div className="container min-h-screen  lg:px-[140px] pb-[100px]">
                                 <div className="w-full">
-                                    <div className="flex flex-col md:flex-row gap-4 flex-1">
-                                        {/* area do avatar */}
-                                        <div className="flex flex-col w-full items-center justify-center relative py-4 md:py-0 md:w-[282px] md:h-[182px]">
+                                    <div className="flex flex-col md:flex-row gap-4 flex-1 justify-between">
+                                         {/* area do avatar */}
+                                         <div className="flex flex-col w-full items-start justify-start md:items-center md:justify-start relative py-4 md:py-0 md:w-[282px] md:h-[182px]">
                                         <div className="absolute -z-10 w-[120px] h-[120px] md:w-[155px] md:h-[155px] rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-400" />
 
                                             <img 
@@ -686,22 +686,27 @@ export default function Profile() {
 
                                         {/* area das opcoes e informacoes */}
                                         <div className="w-full space-y-2 ">
-                                            <div className="flex flex-col sm:flex-row py-1 md:h-[40px] gap-2 sm:gap-4 items-start sm:items-center flex-1">
+                                            <div className="flex items-start sm:items-center justify-between py-1 md:h-[40px] gap-2 sm:gap-4 w-full">
+                                                <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className='text-xl sm:text-2xl font-semibold'>{userProfile.username}</span>
+                                                    <span className='text-2xl sm:text-3xl font-extrabold leading-tight'>{userProfile.name || userProfile.username}</span>
                                                     {userProfile.revisado === "sim" && (
                                                         <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
                                                             <Award className="w-3 h-3 mr-0.5" />
                                                             Verificado
                                                         </span>
                                                     )}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-gray-500">
+                                                    <span className="text-sm">@{userProfile.username}</span>
                                                     <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                                                         {userProfile.tipo}
                                                     </span>
                                                 </div>
-                                                <div className="flex gap-2 flex-wrap mt-2 sm:mt-0">
+                                            </div>
+                                                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
                                                     <button 
-                                                        className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${followLoading ? 'opacity-75 cursor-not-allowed' : ''} ${userProfile.seguindo ? 'bg-gray-200 text-gray-900 hover:bg-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                        className={`inline-flex items-center justify-center px-2 sm:px-3 py-2 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors w-full sm:w-auto ${followLoading ? 'opacity-75 cursor-not-allowed' : ''} ${userProfile.seguindo ? 'bg-gray-200 text-gray-900 hover:bg-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                                                         disabled={followLoading}
                                                         onClick={() => {
                                                             if (!token) {
@@ -776,7 +781,7 @@ export default function Profile() {
                                                         )}
                                                     </button>
                                                     <button 
-                                                        className='bg-gray-200 py-1 px-2 sm:px-3 rounded-md hover:bg-gray-300 flex items-center gap-1 text-xs sm:text-sm'
+                                                        className='bg-gray-200 py-2 px-2 sm:px-3 rounded-md hover:bg-gray-300 flex items-center justify-center gap-1 text-xs sm:text-sm w-full sm:w-auto'
                                                         onClick={() => handleOpenChat(userProfile)}
                                                     >
                                                         <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -788,19 +793,16 @@ export default function Profile() {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-wrap py-2 md:h-[40px] gap-2 sm:gap-4 items-center flex-1">
-                                                <span className="text-sm sm:text-base"><span className='font-bold'>{userProfile.total_produtos || 0}</span> publicações</span>
+                                            <div className="flex flex-wrap py-2 md:h-[40px] gap-3 sm:gap-4 items-center">
                                                 <span className="text-sm sm:text-base"><span className='font-bold'>{userProfile.total_seguidores || 0}</span> seguidores</span>
                                                 <span className="text-sm sm:text-base"><span className='font-bold'>{userProfile.total_seguindo || 0}</span> a seguir</span>
+                                                <span className="text-sm sm:text-base"><span className='font-bold'>{userProfile.total_produtos || 0}</span> publicações</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <p className='font-bold text-xl sm:text-2xl flex items-center gap-2'>
+                                                <p className='hidden font-bold text-xl sm:text-2xl items-center gap-2'>
                                                     {userProfile.name}
-                                                    {(userProfile?.pro || userProfile?.is_pro || userProfile?.conta_pro) && (
-                                                        <BadgeCheck className="w-5 h-5 text-sky-500" title="Conta PRO"/>
-                                                    )}
                                                 </p>
-                                                <p className="text-sm sm:text-base">{userProfile.email}</p>
+                                                <p className="hidden text-sm sm:text-base">{userProfile.email}</p>
                                                 {userProfile.biografia && <p className="mt-1 text-sm sm:text-base">{userProfile.biografia}</p>}
                                                 <div className="flex flex-wrap items-center gap-2 mt-2">
                                                     <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
@@ -827,15 +829,15 @@ export default function Profile() {
                                     <div className="flex h-[1px] bg-gray-300 mt-10 "></div>
                                     {/* tabs */}
                                     <div className="flex-1 gap-4">
-                                        <div className="flex gap-8 justify-center items-center">
-                                        <Link  to={`/${username}`} className={`uppercase transition-all duration-300 gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-t-2  border-t-gray-900 "}`}><Grid/>Produtos</Link>
-                                        <Link  to={`/${username}/publicacoes`}className={`uppercase transition-all duration-100 gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><FileText/>Publicações</Link>
-                                        <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100  gap-2 py-3 flex text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-t-2  border-t-gray-900"}`}><Users/>Seguidores</Link>
-                                        </div>
+                                        <div className="sticky top-0 bg-white z-10 -mx-4 px-4 flex gap-4 overflow-x-auto no-scrollbar border-b items-center">
+                                        <Link  to={`/${username}/publicacoes`} className={`uppercase transition-all duration-100 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/publicacoes` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><FileText/>Publicações</Link>
+                                        <Link  to={`/${username}`}className={`uppercase transition-all duration-300 gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><Grid/>Produtos</Link>
+                                        <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100  gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><Users/>Seguidores</Link>
+                                    </div>
                                         {/* tabs content body */}
                                         <div className="flex-1">
                                             {tabSelected==`/${username}` &&(
-                                                <div className="grid grid-cols-3 gap-4">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                                                     {loadingProducts ?(
                                                     <>
                                                         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -882,11 +884,7 @@ export default function Profile() {
 
                                                             </>
                                                         ):(
-                                                            <div className="g">
-
-                                                                ainda nao tem produtos
-
-                                                            </div>
+                                                            <div className="col-span-2 sm:col-span-3 text-center text-sm text-gray-500 py-4">Ainda não tem produtos</div>
                                                         )}
 
                                                    </> 

@@ -6,6 +6,9 @@ import api from '../api/api';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
 import { Button } from '../components/ui/button';
+import { Link } from 'react-router-dom';
+import { AdsColumn } from '../components/ads/ads_column';
+
 import {
   Dialog,
   DialogContent,
@@ -39,9 +42,11 @@ export default function PublicationsPage() {
   const [loadingComments, setLoadingComments] = useState(false);
   const [gradientStyle, setGradientStyle] = useState('');
   const [showPublicationDialog, setShowPublicationDialog] = useState(false);
+  const [bestBoladas, setBestBoladas] = useState([]);
+  const [loadingAds, setLoadingAds] = useState(false);
   const { user, token } = useAuth();
   const { toast } = useToast();
-  
+
   // Gradient styles array
   const gradientStyles = [
     'bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600',
@@ -76,7 +81,7 @@ export default function PublicationsPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Use the liked field from the API response
       const publicacoesProcessadas = response.data.publicacoes.map(pub => ({
         ...pub,
@@ -84,7 +89,7 @@ export default function PublicationsPage() {
         likes_count: pub.likes_count,
         comentarios_count: pub.comentarios_count
       }));
-      
+
       setPublications(publicacoesProcessadas);
       setTotalPages(response.data.total_pages);
       setCurrentPage(response.data.current_page);
@@ -104,6 +109,31 @@ export default function PublicationsPage() {
   useEffect(() => {
     fetchPublications(currentPage);
   }, [currentPage, perPage, token]);
+
+  // Fetch "melhores boladas" ads
+  useEffect(() => {
+    let isMounted = true;
+    const loadAds = async () => {
+      try {
+        setLoadingAds(true);
+        const res = await api.get('/produtos/anuncios/tipo', {
+          params: { tipo_anuncio: 'melhores_boladas', limit: 10 },
+        });
+        if (isMounted) {
+          const data = Array.isArray(res?.data) ? res.data : [];
+          setBestBoladas(data);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar melhores boladas:', err);
+      } finally {
+        if (isMounted) setLoadingAds(false);
+      }
+    };
+    loadAds();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -138,7 +168,7 @@ export default function PublicationsPage() {
       setIsSubmitting(true);
       const formData = new URLSearchParams();
       formData.append('conteudo', publicationText);
-      
+
       if (currentPublication) {
         // Edit existing publication
         await api.put(`/publicacoes/${currentPublication.id}`, formData, {
@@ -147,7 +177,7 @@ export default function PublicationsPage() {
             'Content-Type': 'application/x-www-form-urlencoded'
           }
         });
-        
+
         // Update the publication in the state
         setPublications(prevPublications => {
           return prevPublications.map(pub => {
@@ -169,7 +199,7 @@ export default function PublicationsPage() {
       } else {
         // Create new publication
         formData.append('gradient_style', getRandomGradient());
-        const response = await api.post('/publicacoes/form', formData, {
+        await api.post('/publicacoes/form', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -178,7 +208,7 @@ export default function PublicationsPage() {
 
         // Refresh publications after posting
         await fetchPublications(1);
-        
+
         toast({
           variant: "success",
           title: "Publicado!",
@@ -219,7 +249,7 @@ export default function PublicationsPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Update the publications state to reflect the like
       setPublications(prevPublications => {
         return prevPublications.map(pub => {
@@ -249,17 +279,17 @@ export default function PublicationsPage() {
     if (!window.confirm("Tem certeza que deseja excluir esta publicação?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/publicacoes/${publicationId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Remove the publication from the list
       setPublications(prev => prev.filter(pub => pub.id !== publicationId));
-      
+
       toast({
         variant: "success",
         title: "Publicação excluída",
@@ -280,14 +310,14 @@ export default function PublicationsPage() {
     setCurrentPublication(publicationId);
     setShowComments(true);
     setLoadingComments(true);
-    
+
     try {
       const response = await api.get(`/publicacoes/${publicationId}/comentarios`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       setComments(response.data);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -305,7 +335,7 @@ export default function PublicationsPage() {
   // Add comment to a publication
   const handleAddComment = async (e) => {
     e.preventDefault();
-    
+
     if (!commentText.trim()) {
       toast({
         variant: "destructive",
@@ -314,7 +344,7 @@ export default function PublicationsPage() {
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
       const response = await api.post(`/publicacoes/${currentPublication}/comentarios`, 
@@ -326,10 +356,10 @@ export default function PublicationsPage() {
           }
         }
       );
-      
+
       // Add the new comment to the list
       setComments(prev => [response.data.comentario, ...prev]);
-      
+
       // Update comment count in the publication
       setPublications(prevPublications => {
         return prevPublications.map(pub => {
@@ -342,10 +372,10 @@ export default function PublicationsPage() {
           return pub;
         });
       });
-      
+
       // Clear comment text
       setCommentText('');
-      
+
       toast({
         variant: "success",
         title: "Comentário adicionado",
@@ -376,17 +406,17 @@ export default function PublicationsPage() {
     if (!window.confirm("Tem certeza que deseja excluir este comentário?")) {
       return;
     }
-    
+
     try {
       await api.delete(`/publicacoes/comentarios/${commentId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Remove the comment from the list
       setComments(prev => prev.filter(comment => comment.id !== commentId));
-      
+
       // Update comment count in the publication
       setPublications(prevPublications => {
         return prevPublications.map(pub => {
@@ -399,7 +429,7 @@ export default function PublicationsPage() {
           return pub;
         });
       });
-      
+
       toast({
         variant: "success",
         title: "Comentário excluído",
@@ -423,7 +453,7 @@ export default function PublicationsPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       // Update the publications state to reflect the share
       setPublications(prevPublications => {
         return prevPublications.map(pub => {
@@ -478,7 +508,7 @@ export default function PublicationsPage() {
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        
+
         <div className="flex items-center space-x-1">
           {[...Array(totalPages)].map((_, index) => {
             const pageNumber = index + 1;
@@ -524,11 +554,11 @@ export default function PublicationsPage() {
       </div>
     );
   };
-  
+
   // Render comments section
   const renderComments = () => {
     if (!showComments) return null;
-    
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-[80vh] flex flex-col">
@@ -543,7 +573,7 @@ export default function PublicationsPage() {
               </svg>
             </button>
           </div>
-          
+
           <div className="p-4 border-b border-gray-100">
             <form onSubmit={handleAddComment} className="flex space-x-2">
               <input
@@ -559,7 +589,7 @@ export default function PublicationsPage() {
               </Button>
             </form>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-4">
             {loadingComments ? (
               <div className="flex justify-center items-center h-32">
@@ -589,7 +619,7 @@ export default function PublicationsPage() {
                           {comment.data_criacao ? new Date(comment.data_criacao).toLocaleString() : "Agora"}
                         </span>
                       </div>
-                      
+
                       {/* Delete button - only show for user's own comments */}
                       {user && comment.usuario && comment.usuario.id === user.id && (
                         <button 
@@ -597,7 +627,7 @@ export default function PublicationsPage() {
                           className="text-gray-400 hover:text-red-500 transition-colors"
                           title="Excluir comentário"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
@@ -637,23 +667,23 @@ export default function PublicationsPage() {
         </div>
       );
     }
-    
-    return publications.map((publication) => {
+
+    return publications.map((publication, index) => {
       // Use o gradiente da publicação ou um padrão se não existir
       const gradientClass = publication.gradient_style || 'bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600';
-      
-      return (
-        <div 
-          key={publication.id} 
+
+      const publicationCard = (
+        <div
+          key={`pub-${publication.id}`}
           className={`rounded-lg border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-md mb-6 ${gradientClass}`}
         >
           {/* Header with user info */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10 ring-2 ring-white">
-                <AvatarImage 
-                  src={publication.usuario?.foto_perfil} 
-                  alt={publication.usuario?.nome} 
+                <AvatarImage
+                  src={publication.usuario?.foto_perfil}
+                  alt={publication.usuario?.nome}
                 />
                 <AvatarFallback>
                   {publication.usuario?.nome?.charAt(0).toUpperCase() || "U"}
@@ -666,7 +696,7 @@ export default function PublicationsPage() {
                 </p>
               </div>
             </div>
-            
+
             {/* Three dots menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -707,32 +737,32 @@ export default function PublicationsPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* Publication content */}
           <div className="p-6">
             <p className="text-white text-center text-xl font-semibold">{publication.conteudo}</p>
           </div>
-          
+
           {/* Actions */}
           <div className="px-4 py-3 bg-white/10 backdrop-blur-md border-t border-white/20 flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <button 
+              <button
                 className={`flex items-center space-x-2 text-white/90 hover:text-red-300 transition-colors`}
                 onClick={() => handleLike(publication.id)}
               >
-                <Heart 
-                  className={`h-5 w-5 ${publication.deu_like ? 'fill-red-300' : ''}`} 
+                <Heart
+                  className={`h-5 w-5 ${publication.deu_like ? 'fill-red-300' : ''}`}
                 />
                 <span className="text-sm font-medium">{publication.likes_count || 0}</span>
               </button>
-              <button 
+              <button
                 className="flex items-center space-x-2 text-white/90 hover:text-blue-300 transition-colors"
                 onClick={() => handleViewComments(publication.id)}
               >
                 <MessageCircle className="h-5 w-5" />
                 <span className="text-sm font-medium">{publication.comentarios_count || 0}</span>
               </button>
-              <button 
+              <button
                 className="flex items-center space-x-2 text-white/90 hover:text-green-300 transition-colors"
                 onClick={() => handleShare(publication.id)}
               >
@@ -754,9 +784,41 @@ export default function PublicationsPage() {
           </div>
         </div>
       );
+
+      const shouldShowInlineAd = (index + 1) % 3 === 0 && bestBoladas.length > 0;
+      if (!shouldShowInlineAd) return publicationCard;
+      const adIndex = Math.max(0, Math.floor((index + 1) / 3) - 1);
+      const ad = bestBoladas[adIndex % bestBoladas.length];
+      const produto = ad?.produto || {};
+      const adKey = `inline-ad-${ad?.anuncio?.id || adIndex}`;
+      const adCard = (
+        <Link key={adKey} to={produto?.slug ? `/post/${produto.slug}` : '#'} className="no-underline">
+          <div className="rounded-lg border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all mb-6">
+            <div className="p-4 border-b border-gray-100">
+              <span className="text-xs font-semibold text-purple-600">Melhores Boladas</span>
+            </div>
+            <div className="flex items-center gap-4 p-4">
+              <img
+                src={produto?.capa || produto?.thumb}
+                onError={(e) => { e.currentTarget.src = '/default.png'; }}
+                alt={produto?.nome || 'Produto'}
+                className="w-24 h-24 object-cover rounded"
+              />
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 line-clamp-1">{produto?.nome}</p>
+                <p className="text-sm text-gray-500 line-clamp-2">{produto?.descricao}</p>
+                {produto?.preco ? (
+                  <div className="text-indigo-600 font-bold mt-1">{`${produto.preco} MT`}</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </Link>
+      );
+      return [publicationCard, adCard];
     });
   };
-  
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -859,27 +921,23 @@ export default function PublicationsPage() {
             </div>
           </div>
           
-          {/* Right side - Anuncios section */}
+          {/* Right side - Anúncios: Melhores Boladas */}
           <div className="hidden md:block md:w-[300px] bg-white shadow-sm border-l border-gray-100">
             <div className="p-4 border-b border-gray-100">
               <h2 className="text-lg font-medium">Anúncios</h2>
             </div>
             <div className="p-4">
-              <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow-md mb-4">
-                <h3 className="font-bold text-lg mb-2">Oferta Especial!</h3>
-                <p className="mb-3">Ganhe 10% de desconto em todos os produtos eletrônicos.</p>
-                <button className="bg-white text-purple-600 px-4 py-2 rounded-full font-medium text-sm hover:bg-gray-100 transition-colors">
-                  Ver Ofertas →
-                </button>
-              </div>
-              
-              <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow-md">
-                <h3 className="font-bold text-lg mb-2">Oferta Especial!</h3>
-                <p className="mb-3">Ganhe 10% de desconto em todos os produtos eletrônicos.</p>
-                <button className="bg-white text-purple-600 px-4 py-2 rounded-full font-medium text-sm hover:bg-gray-100 transition-colors">
-                  Ver Ofertas →
-                </button>
-              </div>
+              {loadingAds ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-24 bg-gray-100 rounded" />
+                  <div className="h-24 bg-gray-100 rounded" />
+                  <div className="h-24 bg-gray-100 rounded" />
+                </div>
+              ) : bestBoladas.length > 0 ? (
+                <AdsColumn ads={bestBoladas} />
+              ) : (
+                <div className="text-sm text-gray-500">Sem anúncios no momento.</div>
+              )}
             </div>
           </div>
         </main>
