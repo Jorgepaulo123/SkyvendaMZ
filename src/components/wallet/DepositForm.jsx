@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { FaPaypal, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
-import { SiMoneygram } from 'react-icons/si';
 import { toast } from 'react-hot-toast';
 import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
@@ -15,10 +13,6 @@ export default function DepositForm() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('mpesa');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
   const [step, setStep] = useState(1);
   const [pinOpen, setPinOpen] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
@@ -27,10 +21,6 @@ export default function DepositForm() {
   const resetForm = () => {
     setDepositAmount('');
     setPhoneNumber('');
-    setCardNumber('');
-    setCardHolder('');
-    setExpiryDate('');
-    setCvv('');
     setStep(1);
     setSelectedPaymentMethod('mpesa');
     setSuccessMessage('');
@@ -45,33 +35,24 @@ export default function DepositForm() {
       return;
     }
 
-    if (selectedPaymentMethod === 'mpesa' || selectedPaymentMethod === 'emola') {
+    if (selectedPaymentMethod === 'mpesa') {
       if (!phoneNumber || !/^[0-9]{9}$/.test(phoneNumber)) {
         setErrorMessage('Por favor, insira um número de telefone válido (9 dígitos)');
         return;
       }
     }
 
-    if (selectedPaymentMethod === 'visa' || selectedPaymentMethod === 'mastercard') {
-      if (!cardNumber || !cardHolder || !expiryDate || !cvv) {
-        setErrorMessage('Por favor, preencha todos os campos do cartão');
-        return;
-      }
-      
-      // Validações simples do cartão
-      if (!/^[0-9]{16}$/.test(cardNumber.replace(/\s/g, ''))) {
-        setErrorMessage('Número de cartão inválido');
-        return;
-      }
-      
-      if (!/^[0-9]{3,4}$/.test(cvv)) {
-        setErrorMessage('CVV inválido');
-        return;
-      }
-    }
-
-    setIsProcessing(true);
+    // Restringe métodos: apenas M-Pesa disponível; E-mola indisponível
     setErrorMessage('');
+    if (selectedPaymentMethod === 'emola') {
+      toast.error('E-mola está temporariamente indisponível para depósitos.');
+      return;
+    }
+    if (selectedPaymentMethod !== 'mpesa') {
+      setErrorMessage('Método de pagamento não suportado. Use M-Pesa.');
+      return;
+    }
+    setIsProcessing(true);
 
     try {
       if (selectedPaymentMethod === 'mpesa') {
@@ -84,12 +65,6 @@ export default function DepositForm() {
           valor: parseInt(depositAmount, 10)
         });
         setPinOpen(true);
-      } else {
-        // Simulação de processamento para outros métodos
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success(`Depósito de ${depositAmount} MTn iniciado com sucesso!`);
-        setSuccessMessage(`Depósito de ${depositAmount} MTn iniciado com sucesso! Aguarde a confirmação.`);
-        resetForm();
       }
       
     } catch (error) {
@@ -100,7 +75,8 @@ export default function DepositForm() {
         setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
       }
     } finally {
-      // mantém loading até fechar o modal ou concluir
+      setPinLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -128,38 +104,6 @@ export default function DepositForm() {
       setPinLoading(false);
       setIsProcessing(false);
     }
-  };
-
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    
-    for (let i = 0; i < match.length; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return value;
-    }
-  };
-
-  const handleCardNumberChange = (e) => {
-    const formatted = formatCardNumber(e.target.value);
-    setCardNumber(formatted);
-  };
-
-  const handleExpiryDateChange = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    
-    if (value.length > 2) {
-      value = value.substring(0, 2) + '/' + value.substring(2, 4);
-    }
-    
-    setExpiryDate(value);
   };
 
   return (
@@ -248,10 +192,9 @@ export default function DepositForm() {
                   </div>
                   
                   <div
-                    className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'emola' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                    onClick={() => setSelectedPaymentMethod('emola')}
+                    className="border p-4 rounded-lg relative opacity-60 cursor-not-allowed"
+                    onClick={() => toast.error('E-mola está temporariamente indisponível para depósitos.')}
+                    title="Indisponível no momento"
                   >
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="bg-white p-2 rounded-full mb-2 flex items-center justify-center" style={{width: '40px', height: '40px'}}>
@@ -262,57 +205,16 @@ export default function DepositForm() {
                         />
                       </div>
                       <span className="text-sm font-medium">E-mola</span>
-                    </div>
-                  </div>
-                  
-                  <div
-                    className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'visa' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                    onClick={() => setSelectedPaymentMethod('visa')}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className="bg-blue-700 text-white p-2 rounded-full mb-2">
-                        <FaCcVisa size={20} />
-                      </div>
-                      <span className="text-sm font-medium">Visa</span>
-                    </div>
-                  </div>
-                  
-                  <div
-                    className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'mastercard' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                    onClick={() => setSelectedPaymentMethod('mastercard')}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className="bg-red-500 text-white p-2 rounded-full mb-2">
-                        <FaCcMastercard size={20} />
-                      </div>
-                      <span className="text-sm font-medium">Mastercard</span>
-                    </div>
-                  </div>
-                  
-                  <div
-                    className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'paypal' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                    onClick={() => setSelectedPaymentMethod('paypal')}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <div className="bg-blue-600 text-white p-2 rounded-full mb-2">
-                        <FaPaypal size={20} />
-                      </div>
-                      <span className="text-sm font-medium">PayPal</span>
+                      <span className="mt-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Indisponível</span>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {(selectedPaymentMethod === 'mpesa' || selectedPaymentMethod === 'emola') && (
+              {selectedPaymentMethod === 'mpesa' && (
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Número de Telefone {selectedPaymentMethod === 'mpesa' ? 'M-Pesa' : 'E-mola'}
+                    Número de Telefone M-Pesa
                   </label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -330,87 +232,7 @@ export default function DepositForm() {
                     />
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    {selectedPaymentMethod === 'mpesa' 
-                      ? 'Você receberá uma solicitação de pagamento no seu M-Pesa.' 
-                      : 'Você receberá uma solicitação de pagamento no seu E-mola.'}
-                  </p>
-                </div>
-              )}
-              
-              {(selectedPaymentMethod === 'visa' || selectedPaymentMethod === 'mastercard') && (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                      Número do Cartão
-                    </label>
-                    <input
-                      type="text"
-                      id="cardNumber"
-                      value={cardNumber}
-                      onChange={handleCardNumberChange}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="cardHolder" className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome no Cartão
-                    </label>
-                    <input
-                      type="text"
-                      id="cardHolder"
-                      value={cardHolder}
-                      onChange={(e) => setCardHolder(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="NOME COMO ESTÁ NO CARTÃO"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-1">
-                        Data de Validade
-                      </label>
-                      <input
-                        type="text"
-                        id="expiryDate"
-                        value={expiryDate}
-                        onChange={handleExpiryDateChange}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="MM/AA"
-                        maxLength={5}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
-                        CVV
-                      </label>
-                      <input
-                        type="text"
-                        id="cvv"
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 4))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="123"
-                        maxLength={4}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {selectedPaymentMethod === 'paypal' && (
-                <div className="p-4 text-center">
-                  <FaPaypal size={40} className="mx-auto mb-4 text-blue-600" />
-                  <p className="text-gray-700">
-                    Ao clicar em "Continuar", você será redirecionado para o PayPal para completar o pagamento.
+                    Você receberá uma solicitação de pagamento no seu M-Pesa.
                   </p>
                 </div>
               )}
@@ -451,4 +273,4 @@ export default function DepositForm() {
       </div>
     </div>
   );
-} 
+}

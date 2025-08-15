@@ -1,7 +1,4 @@
 import React from 'react';
-import { FaPaypal, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
-import { SiMoneygram } from 'react-icons/si';
-import { BsBank } from 'react-icons/bs';
 
 export default function PaymentMethods() {
   const paymentMethods = [
@@ -31,47 +28,8 @@ export default function PaymentMethods() {
       color: 'bg-white',
       limits: 'Limite de até 20.000 MTn por dia',
       timeframe: 'Processamento em poucos minutos',
-      fees: '2.5% de taxa para depósitos e saques'
-    },
-    {
-      id: 'visa',
-      name: 'Visa',
-      description: 'Pagamento com cartão de crédito/débito',
-      icon: <FaCcVisa size={24} />,
-      color: 'bg-blue-700',
-      limits: 'Limite definido pelo seu banco',
-      timeframe: 'Depósitos processados em até 24h',
-      fees: '2.9% + 10 MTn para depósitos'
-    },
-    {
-      id: 'mastercard',
-      name: 'Mastercard',
-      description: 'Pagamento com cartão de crédito/débito',
-      icon: <FaCcMastercard size={24} />,
-      color: 'bg-red-500',
-      limits: 'Limite definido pelo seu banco',
-      timeframe: 'Depósitos processados em até 24h',
-      fees: '2.9% + 10 MTn para depósitos'
-    },
-    {
-      id: 'bank',
-      name: 'Transferência Bancária',
-      description: 'Transferência direta para sua conta',
-      icon: <BsBank size={24} />,
-      color: 'bg-blue-600',
-      limits: 'Sem limites para transferências',
-      timeframe: 'Saques processados em 1-3 dias úteis',
-      fees: '1% para saques (mín. 50 MTn)'
-    },
-    {
-      id: 'paypal',
-      name: 'PayPal',
-      description: 'Pagamento online internacional',
-      icon: <FaPaypal size={24} />,
-      color: 'bg-blue-600',
-      limits: 'Limite definido pela sua conta PayPal',
-      timeframe: 'Processamento em até 48h',
-      fees: '3.5% + taxa de conversão para depósitos'
+      fees: '2.5% de taxa para depósitos e saques',
+      disabled: true
     }
   ];
 
@@ -82,14 +40,17 @@ export default function PaymentMethods() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paymentMethods.map((method) => (
-            <div key={method.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <div className={`${method.color} text-white p-4 flex items-center justify-between`}>
+            <div key={method.id} className={`border rounded-lg overflow-hidden shadow-sm transition-shadow ${method.disabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-md'}`}>
+              <div className={`bg-white p-4 flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
                   {method.icon}
-                  <span className={`font-semibold ${method.id === 'mpesa' || method.id === 'emola' ? 'text-gray-800' : ''}`}>{method.name}</span>
+                  <span className="font-semibold text-gray-800">{method.name}</span>
                 </div>
                 {method.id === 'mpesa' && (
                   <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-medium">Popular</span>
+                )}
+                {method.disabled && (
+                  <span className="bg-gray-300 text-gray-700 text-xs px-2 py-1 rounded-full font-medium">Indisponível</span>
                 )}
               </div>
               <div className="p-4 space-y-3">
@@ -125,4 +86,4 @@ export default function PaymentMethods() {
       </div>
     </div>
   );
-} 
+}
