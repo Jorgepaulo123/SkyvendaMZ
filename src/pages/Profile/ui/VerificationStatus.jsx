@@ -5,7 +5,10 @@ import { RejectedCard } from './RejectedCard';
 import UserForm from './UserForm';
 
 export function VerificationStatus({ estadoRevisao }) {
-  if (estadoRevisao === 'sim') {
+  const normalize = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const v = normalize(estadoRevisao);
+
+  if (v === 'sim' || v === 'aprovado') {
     return (
       <div className="space-y-8">
         <VerifiedCard />
@@ -13,18 +16,15 @@ export function VerificationStatus({ estadoRevisao }) {
     );
   }
 
-  if (estadoRevisao === 'pendente') {
+  if (v === 'pendente') {
     return <PendingCard />;
   }
   
-  if (estadoRevisao === 'recusado') {
+  if (v === 'recusado' || v === 'nao' || v === 'não' || v === 'rejeitado' || v === 'reprovado') {
     return <RejectedCard />;
   }
   
-  if (estadoRevisao === 'nao') {
-    // Renderiza um formulário para usuários que ainda precisam verificar o perfil
-    return <UserForm />;
-  }
+  
 
   // Caso padrão: mostrar formulário para qualquer outro caso
   return <UserForm />;

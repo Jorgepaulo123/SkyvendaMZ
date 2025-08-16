@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { X, Upload, Calendar, User as UserIcon, MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 import api from '../../../api/api';
-import { Upload, User, MapPin, Phone, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
-import ModernDatePicker from './ModernDatePicker';
 import toast, { Toaster } from 'react-hot-toast';
 import StepIndicator from './StepIndicator';
 import ImagePreview from './ImagePreview';
-import { PROVINCIAS ,DISTRITOS} from '../data/consts';
+import ModernDatePicker from './ModernDatePicker';
+import { PROVINCIAS, DISTRITOS } from '../data/consts';
 
 const STEPS = ['Dados Pessoais', 'Localização', 'Documentos'];
 
-
-
-export default function UserForm() {
+export default function ResubmitVerificationModal({ open, onClose }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [token] = useState(localStorage.getItem('auth_token') || null);
   const [formData, setFormData] = useState({
     data_nascimento: '',
     nacionalidade: '',
@@ -27,13 +26,12 @@ export default function UserForm() {
     foto_bi_frente: null,
     foto_retrato: null,
   });
-  const [token, setToken] = useState(localStorage.getItem('auth_token') || null);
-  
-  const [loading, setLoading] = useState(false);
+
+  if (!open) return null;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => {
+    setFormData((prev) => {
       if (name === 'provincia') {
         return { ...prev, [name]: value, distrito: '' };
       }
@@ -47,10 +45,13 @@ export default function UserForm() {
     }
   };
 
+  const goNext = () => setCurrentStep((s) => Math.min(s + 1, STEPS.length));
+  const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 1));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (currentStep !== 3) {
-      setCurrentStep(currentStep + 1);
+      goNext();
       return;
     }
 
@@ -65,29 +66,29 @@ export default function UserForm() {
     });
 
     try {
-      const response = await api.post(
-        '/info_usuario/',
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      window.location.reload()
-      console.log(response.data);
+      await api.post('/info_usuario/', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Dados reenviados! Seu perfil agora está em análise.');
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (error) {
-      toast.error('Erro ao enviar');
-      console.error('Error:', error);
+      toast.error('Erro ao reenviar. Verifique os campos e tente novamente.');
+      console.error('Resubmit error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const inputClassName = "h-[40px] mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition duration-150 ease-in-out hover:border-gray-400";
-  const selectClassName = "h-[40px] mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition duration-150 ease-in-out hover:border-gray-400 bg-white";
+  const inputClassName =
+    'h-[44px] mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 sm:text-sm transition duration-150 ease-in-out hover:border-gray-300 bg-white/70 backdrop-blur';
+  const selectClassName =
+    'h-[44px] mt-1 block w-full rounded-xl border border-gray-200 px-3 py-2 text-gray-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 sm:text-sm transition duration-150 ease-in-out hover:border-gray-300 bg-white';
 
   const renderPersonalInfo = () => (
     <div className="space-y-4">
@@ -106,7 +107,7 @@ export default function UserForm() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          <User className="inline-block w-4 h-4 mr-2" />
+          <UserIcon className="inline-block w-4 h-4 mr-2" />
           Nacionalidade
         </label>
         <input
@@ -120,9 +121,7 @@ export default function UserForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Sexo
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Sexo</label>
         <select
           name="sexo"
           value={formData.sexo}
@@ -202,17 +201,15 @@ export default function UserForm() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          <Phone className="inline-block w-4 h-4 mr-2" />
-          Contacto
+          Localização (opcional)
         </label>
         <input
-          type="tel"
-          name="contacto"
-          value={formData.contacto}
+          type="text"
+          name="localizacao"
+          value={formData.localizacao}
           onChange={handleInputChange}
           className={inputClassName}
-          required
-          placeholder="Ex: +258 84 123 4567"
+          placeholder="Ex: Av. 25 de Setembro, 123"
         />
       </div>
     </div>
@@ -228,7 +225,7 @@ export default function UserForm() {
             label="BI (Frente)"
           />
         ) : (
-          <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-indigo-500 transition-colors">
+          <div className="relative border-2 border-dashed border-gray-300 rounded-2xl p-6 hover:border-indigo-500 transition-colors bg-white/60">
             <input
               type="file"
               name="foto_bi_frente"
@@ -251,7 +248,7 @@ export default function UserForm() {
             label="BI (Verso)"
           />
         ) : (
-          <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-indigo-500 transition-colors">
+          <div className="relative border-2 border-dashed border-gray-300 rounded-2xl p-6 hover:border-indigo-500 transition-colors bg-white/60">
             <input
               type="file"
               name="foto_bi_verso"
@@ -274,7 +271,7 @@ export default function UserForm() {
             label="Foto Retrato"
           />
         ) : (
-          <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-indigo-500 transition-colors">
+          <div className="relative border-2 border-dashed border-gray-300 rounded-2xl p-6 hover:border-indigo-500 transition-colors bg-white/60">
             <input
               type="file"
               name="foto_retrato"
@@ -294,50 +291,58 @@ export default function UserForm() {
   );
 
   return (
-    <div className="w-full">
-      <div className="mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Registro de Usuário</h2>
-            <p className="mt-2 text-gray-600">Preencha seus dados pessoais</p>
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-pink-500/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 mx-auto mt-6 w-full max-w-3xl">
+        <div className="rounded-2xl shadow-2xl overflow-hidden border border-white/40 bg-white/80 backdrop-blur">
+          {/* Header */}
+          <div className="p-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold">Reenvio de Verificação</h3>
+              <p className="text-xs opacity-90">Atualize seus dados e envie novamente para análise</p>
+            </div>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20">
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <StepIndicator currentStep={currentStep} steps={STEPS} />
+          <div className="p-6">
+            <StepIndicator currentStep={currentStep} steps={STEPS} />
+            <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+              {currentStep === 1 && renderPersonalInfo()}
+              {currentStep === 2 && renderLocationInfo()}
+              {currentStep === 3 && renderDocuments()}
 
-          <form onSubmit={handleSubmit} className="space-y-6 mt-8">
-            {currentStep === 1 && renderPersonalInfo()}
-            {currentStep === 2 && renderLocationInfo()}
-            {currentStep === 3 && renderDocuments()}
-
-            <div className="flex justify-between pt-4">
-              {currentStep > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(currentStep - 1)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Anterior
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  'Enviando...'
-                ) : currentStep === 3 ? (
-                  'Finalizar'
-                ) : (
-                  <>
-                    Próximo
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
+              <div className="flex justify-between pt-4">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Anterior
+                  </button>
                 )}
-              </button>
-            </div>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    'Enviando...'
+                  ) : currentStep === 3 ? (
+                    'Reenviar'
+                  ) : (
+                    <>
+                      Próximo
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
       <Toaster position="top-right" />

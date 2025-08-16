@@ -19,8 +19,8 @@ export default function Header2() {
         navigate('/profile/review')
     }
 
-    // Só mostrar o botão de verificação se não estiver revisado
-    const shouldShowVerification = isAuthenticated && user?.revisado !== "sim"
+    // Só mostrar o botão de verificação se não estiver revisado (sim/aprovado não mostram)
+    const shouldShowVerification = isAuthenticated && !['sim','aprovado'].includes((user?.revisado || '').toLowerCase())
 
     return (
         <>

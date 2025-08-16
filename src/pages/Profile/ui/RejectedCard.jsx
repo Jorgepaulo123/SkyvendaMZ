@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { XCircle, Shield, User, AlertTriangle, RefreshCw } from 'lucide-react';
 import BlueSparkLogo from '../../../components/svg/bluesparkmz';
 import { AuthContext } from '../../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import ResubmitVerificationModal from './ResubmitVerificationModal';
 
 export function RejectedCard() {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const [openModal, setOpenModal] = useState(false);
   
   // Usar o ID único real da API ou um valor padrão
   const skId = user?.id_unico || 'sk-206680973';
@@ -14,16 +14,14 @@ export function RejectedCard() {
   // Tipo de usuário (pode ser obtido do contexto de autenticação)
   const userType = user?.tipo || 'nhonguista';
   
-  // Função para redirecionar para o formulário
-  const handleResubmit = () => {
-    navigate('/accounts/edit');
-  };
+  // Abrir modal de reenvio
+  const handleResubmit = () => setOpenModal(true);
   
   return (
     <div className="w-full">
       <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-5 shadow-lg border border-red-100 relative overflow-hidden">
         {/* Marca d'água do logo e texto no fundo */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
           {/* Logo como marca d'água */}
           <div className="absolute -right-10 -bottom-10 opacity-10">
             <svg width="200" height="200" viewBox="0 0 120 40">
@@ -61,7 +59,7 @@ export function RejectedCard() {
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                {user?.nome || 'Jorge'}
+                {user?.nome ?? '—'}
               </h2>
               <div className="mt-1 space-y-1">
                 <p className="text-xs text-gray-500 flex items-center">
@@ -108,12 +106,16 @@ export function RejectedCard() {
         
         {/* Botão para reenviar */}
         <button 
+          type="button"
           onClick={handleResubmit}
           className="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center font-medium"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          Enviar Documentos Novamente
+          Reenviar Formulário
         </button>
+        {openModal && (
+          <ResubmitVerificationModal open={openModal} onClose={() => setOpenModal(false)} />
+        )}
         
         {/* Rodapé com logo da BlueSpark */}
         <div className="mt-4 pt-3 border-t border-red-100 flex justify-end">

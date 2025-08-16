@@ -54,7 +54,7 @@ export function PendingCard() {
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                {user?.nome || 'Jorge'}
+                {user?.nome ?? '—'}
               </h2>
               <div className="mt-1 space-y-1">
                 <p className="text-xs text-gray-500 flex items-center">
