@@ -49,7 +49,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       const fetchNotificacoesNaoLidas = async () => {
         try {
           const response = await fetch(
-            'https://skyvendamz-1.onrender.com/usuario/notificacoes/estatisticas',
+            'https://skyvendas-production.up.railway.app/usuario/notificacoes/estatisticas',
             {
               headers: {
                 'Authorization': `Bearer ${token}`
@@ -98,7 +98,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     // Também enviar requisição para marcar todas as notificações como lidas no backend
     if (token) {
       console.log('WebSocket: Enviando requisição para marcar todas as notificações como lidas');
-      fetch('https://skyvendamz-1.onrender.com/usuario/notificacoes/marcar-todas-como-lidas', {
+      fetch('https://skyvendas-production.up.railway.app/usuario/notificacoes/marcar-todas-como-lidas', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -127,7 +127,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     console.log('WebSocket: Iniciando conexão com token e ID de usuário:', user.id);
     
     // URL do WebSocket
-    const wsUrl = `wss://skyvendamz-1.onrender.com/ws/${user.id}`;
+    const wsUrl = `wss://skyvendas-production.up.railway.app/ws/${user.id}`;
     console.log('%cWebSocket: Tentando conectar em: ' + wsUrl, 'color: blue; font-weight: bold');
     console.log('WebSocket: ID do usuário:', user.id);
     console.log('WebSocket: Token disponível:', !!token);

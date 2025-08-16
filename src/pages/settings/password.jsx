@@ -43,7 +43,7 @@ export default function PasswordSettings() {
       
       // Use the endpoint provided
       const response = await axios.put(
-        `https://skyvendamz-1.onrender.com/usuario/atualizar_senha/?senha_atual=${encodeURIComponent(currentPassword)}&nova_senha=${encodeURIComponent(newPassword)}`,
+        `https://skyvendas-production.up.railway.app/usuario/atualizar_senha/?senha_atual=${encodeURIComponent(currentPassword)}&nova_senha=${encodeURIComponent(newPassword)}`,
         {},  // Empty body as parameters are in URL
         {
           headers: {

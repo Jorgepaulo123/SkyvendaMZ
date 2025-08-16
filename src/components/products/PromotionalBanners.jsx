@@ -8,7 +8,7 @@ export default function PromotionalBanners() {
   useEffect(() => {
     const fetchAnuncios = async () => {
       try {
-        const response = await axios.get('https://skyvendamz-1.onrender.com/produtos/anuncios/listar');
+        const response = await axios.get('https://skyvendas-production.up.railway.app/produtos/anuncios/listar');
         setAnuncios(response.data);
       } catch (error) {
         console.error('Erro ao carregar anúncios:', error);

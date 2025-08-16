@@ -96,7 +96,7 @@ const SuperOfertas = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          'https://skyvendamz-1.onrender.com/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10'
+          'https://skyvendas-production.up.railway.app/produtos/anuncios/tipo?tipo_anuncio=ofertas_diarias&limit=10'
         );
         console.log('Ofertas diárias:', response.data);
         setOfertas(response.data);

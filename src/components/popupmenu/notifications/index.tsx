@@ -73,7 +73,7 @@ export function Notifications({ onClose }: NotificationsProps) {
       setLoading(true);
       
       const response = await axios.get<NotificationsResponse>(
-        'https://skyvendamz-1.onrender.com/usuario/notificacoes/?page=1&per_page=20&ordem=desc&marcar_como_abertas=true', 
+        'https://skyvendas-production.up.railway.app/usuario/notificacoes/?page=1&per_page=20&ordem=desc&marcar_como_abertas=true', 
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -160,7 +160,7 @@ export function Notifications({ onClose }: NotificationsProps) {
       setMenuAberto(null); // Fecha o menu de opções
       
       const response = await axios.put(
-        `https://skyvendamz-1.onrender.com/usuario/notificacoes/${id}/ler`,
+        `https://skyvendas-production.up.railway.app/usuario/notificacoes/${id}/ler`,
         {},
         {
           headers: {
@@ -212,7 +212,7 @@ export function Notifications({ onClose }: NotificationsProps) {
       setMenuAberto(null); // Fecha o menu de opções
       
       const response = await axios.put(
-        `https://skyvendamz-1.onrender.com/usuario/notificacoes/${id}/desativar`,
+        `https://skyvendas-production.up.railway.app/usuario/notificacoes/${id}/desativar`,
         {},
         {
           headers: {

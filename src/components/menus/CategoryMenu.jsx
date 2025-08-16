@@ -34,7 +34,7 @@ export function CategoryMenu() {
       try {
         // Fazer a chamada à API de pesquisa com o endpoint correto
         const response = await fetch(
-          `https://skyvendamz-1.onrender.com/produtos/pesquisa/?termo=${encodeURIComponent(searchTerm)}&offset=1&limit=10`,
+          `https://skyvendas-production.up.railway.app/produtos/pesquisa/?termo=${encodeURIComponent(searchTerm)}&offset=1&limit=10`,
           {
             headers: {
               'accept': 'application/json'

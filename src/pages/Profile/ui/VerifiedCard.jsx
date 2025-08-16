@@ -15,7 +15,7 @@ export function VerifiedCard() {
   // Buscar estatísticas do usuário da API
   useEffect(() => {
     if (token) {
-      fetch('https://skyvendamz-1.onrender.com/usuario/estatisticas', {
+      fetch('https://skyvendas-production.up.railway.app/usuario/estatisticas', {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`

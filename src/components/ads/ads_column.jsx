@@ -32,7 +32,7 @@ export function AdsColumn({ ads }) {
         >
           <img
             src={item.produto.thumb?.startsWith('http') ? item.produto.thumb : `${item.produto.capa}`}
-            onError={e=>e.target.src='https://skyvenda-mz.vercel.app/no-image.png'}
+            onError={e=>e.target.src='https://skyvenda.vercel.app/no-image.png'}
             className="w-[80px] object-cover rounded-sm"
             alt={item.produto.nome}
           />

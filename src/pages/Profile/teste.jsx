@@ -62,7 +62,7 @@ export default function ProfileTeste() {
             
         }
         if (user?.perfil) {
-            setPreviewImage(`https://skyvenda-8k97.onrender.com/perfil/${user.perfil}`);
+            setPreviewImage(`https://skyvendas-production.up.railway.app/perfil/${user.perfil}`);
           }
     },[])
 
@@ -284,7 +284,7 @@ export default function ProfileTeste() {
                                                         className="bg-white border flex items-center justify-center aspect-square rounded-md relative group overflow-hidden shadow-xm hover:shadow-lg transition-shadow"
                                                     >
                                                         <img
-                                                        src={`https://skyvenda-8k97.onrender.com/produto/${product.thumb}`}
+                                                        src={`https://skyvendas-production.up.railway.app/produto/${product.thumb}`}
                                                         onError={(e) => (e.target.src = `${base_url}/default.png`)}
                                                         className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
                                                         />
@@ -335,7 +335,7 @@ export default function ProfileTeste() {
                                         <div className="absolute -z-10 md:w-[155px] md:h-[155px] rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-yellow-400" />
 
                                             <img 
-                                            src={`https://skyvenda-8k97.onrender.com/perfil/${userProfile?.perfil}`}
+                                            src={`https://skyvendas-production.up.railway.app/perfil/${userProfile?.perfil}`}
                                             className='rounded-full border md:w-[150px] md:h-[150px]'/>
                                         </div>
 
@@ -398,7 +398,7 @@ export default function ProfileTeste() {
                                                                 className="bg-white border flex items-center justify-center aspect-square rounded-md relative group overflow-hidden shadow-xm hover:shadow-lg transition-shadow"
                                                             >
                                                                 <img
-                                                                src={`https://skyvenda-8k97.onrender.com/produto/${product.thumb}`}
+                                                                src={`https://skyvendas-production.up.railway.app/produto/${product.thumb}`}
                                                                 onError={(e) => (e.target.src = `${base_url}/default.png`)}
                                                                 className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
                                                                 />
