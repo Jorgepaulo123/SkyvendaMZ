@@ -8,10 +8,6 @@ const WebSocketContext = createContext(null);
 
 // Constrói a URL do WebSocket de forma robusta
 function buildWsUrl(token, userId) {
-  // Exigir userId para padronizar a rota /ws/{userId}
-  if (!userId) {
-    return null;
-  }
   try {
     // Preferir o protocolo do backend (base_url) para evitar ws em produção https
     const apiUrl = new URL(base_url);
@@ -20,8 +16,7 @@ function buildWsUrl(token, userId) {
     const url = new URL(base_url);
     const host = import.meta?.env?.VITE_WS_HOST ?? url.hostname ?? window.location.hostname;
     const port = (import.meta?.env?.VITE_WS_PORT ?? url.port) || (isHttps ? '443' : '80');
-    const pathBase = import.meta?.env?.VITE_WS_PATH ?? '/ws';
-    const path = userId ? `${pathBase}/${userId}` : pathBase;
+    const path = import.meta?.env?.VITE_WS_PATH ?? '/ws';
     const defaultPort = isHttps ? '443' : '80';
     const portPart = String(port) === defaultPort || String(port) === '' ? '' : `:${port}`;
     const q = token ? `?token=${encodeURIComponent(token)}` : '';
@@ -29,7 +24,7 @@ function buildWsUrl(token, userId) {
   } catch (e) {
     // fallback para conversão simples
     const base = base_url.replace('http://', 'ws://').replace('https://', 'wss://');
-    const path = userId ? `/ws/${userId}` : '/ws';
+    const path = '/ws';
     const q = token ? `?token=${encodeURIComponent(token)}` : '';
     return `${base}${path}${q}`;
   }

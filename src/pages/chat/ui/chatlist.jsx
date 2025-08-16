@@ -41,10 +41,10 @@ export default function ChatList({chats,gettingChats,handleUserSelect,selectedUs
           >
             <div className="relative">
               <img 
-                src={chat.foto || `http://skyvenda-mz.vercel.app/avatar.png`} 
+                src={chat.foto || `https://skyvenda-mz.vercel.app/avatar.png`} 
                 alt={chat.nome} 
                 className="w-12 h-12 rounded-full"
-                onError={(e) => e.target.src = `http://skyvenda-mz.vercel.app/avatar.png`}
+                onError={(e) => e.target.src = `https://skyvenda-mz.vercel.app/avatar.png`}
               />
               {onlineUsers.some(u => String(u.id) === String(chat.id)) && (
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" title="Online"></div>

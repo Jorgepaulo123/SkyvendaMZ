@@ -51,10 +51,10 @@ export default function FriendsModal({
                 }}
               >
                 <img 
-                  src={friend.foto_perfil || "http://skyvenda-mz.vercel.app/avatar.png"}
+                  src={friend.foto_perfil || "https://skyvenda-mz.vercel.app/avatar.png"}
                   alt={friend.nome}
                   className="w-12 h-12 rounded-full"
-                  onError={(e) => e.target.src = `http://skyvenda-mz.vercel.app/avatar.png`}
+                  onError={(e) => e.target.src = `https://skyvenda-mz.vercel.app/avatar.png`}
                 />
                 <div>
                   <p className="font-semibold">{friend.nome}</p>

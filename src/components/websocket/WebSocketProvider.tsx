@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef, ReactNod
 // @ts-ignore - Ignorando erro de tipagem para o AuthContext
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { base_url } from '../../api/api';
 
 interface WebSocketContextType {
   connected: boolean;
@@ -126,8 +127,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
     console.log('WebSocket: Iniciando conexão com token e ID de usuário:', user.id);
     
-    // URL do WebSocket
-    const wsUrl = `wss://skyvendas-production.up.railway.app/ws/${user.id}`;
+    // URL do WebSocket (padronizada em /ws com token no query)
+    const apiUrl = new URL(base_url);
+    const proto = apiUrl.protocol === 'https:' ? 'wss' : 'ws';
+    const host = apiUrl.host; // inclui porta se houver
+    const query = token ? `?token=${encodeURIComponent(token)}` : '';
+    const wsUrl = `${proto}://${host}/ws${query}`;
     console.log('%cWebSocket: Tentando conectar em: ' + wsUrl, 'color: blue; font-weight: bold');
     console.log('WebSocket: ID do usuário:', user.id);
     console.log('WebSocket: Token disponível:', !!token);
