@@ -8,6 +8,10 @@ const WebSocketContext = createContext(null);
 
 // Constrói a URL do WebSocket de forma robusta
 function buildWsUrl(token, userId) {
+  // Exigir userId para padronizar a rota /ws/{userId}
+  if (!userId) {
+    return null;
+  }
   try {
     // Preferir o protocolo do backend (base_url) para evitar ws em produção https
     const apiUrl = new URL(base_url);
@@ -398,10 +402,19 @@ export const WebSocketProvider = ({ children }) => {
 
   const connectWebSocket = useCallback(() => {
     // Não tentar conectar se já estiver conectado ou em processo de reconexão
-    if (webSocketConnected || isReconnecting || !isAuthenticated || !token || !isOnline) return;
+    if (webSocketConnected || isReconnecting || !isAuthenticated || !token || !isOnline || !user?.id) return;
 
     setIsReconnecting(true);
+    // Fechar conexão anterior, se existir
+    if (socket) {
+      try { socket.close(1000, 'Reconnecting'); } catch (e) {}
+      setSocket(null);
+    }
     const wsUrl = buildWsUrl(token, user?.id);
+    if (!wsUrl) {
+      setIsReconnecting(false);
+      return;
+    }
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -409,6 +422,14 @@ export const WebSocketProvider = ({ children }) => {
       setWebSocketConnected(true);
       setIsReconnecting(false);
       retryRef.current = 0;
+      // Enviar mensagem de autenticação para compatibilidade com o backend
+      try {
+        if (token) {
+          ws.send(JSON.stringify({ type: 'authenticate', token }));
+        }
+      } catch (err) {
+        console.warn('Falha ao enviar autenticação via WebSocket:', err);
+      }
     };
   
     ws.onmessage = (event) => {
@@ -504,7 +525,7 @@ export const WebSocketProvider = ({ children }) => {
     ws.onclose = () => {
       console.log("WebSocket desconectado!");
       setWebSocketConnected(false);
-      if (isOnline && isAuthenticated) {
+      if (isOnline && isAuthenticated && user?.id) {
         const delay = Math.min(10000, 1000 * 2 ** retryRef.current); // até 10s
         console.log(`Tentando reconectar em ${Math.round(delay/1000)} segundos...`);
         setTimeout(() => {
@@ -517,7 +538,7 @@ export const WebSocketProvider = ({ children }) => {
 
     setSocket(ws);
     return ws;
-  }, [token, isAuthenticated, isOnline, webSocketConnected, isReconnecting, handleIncomingMessage, updateMessageById]);
+  }, [token, isAuthenticated, isOnline, webSocketConnected, isReconnecting, handleIncomingMessage, updateMessageById, user]);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -543,7 +564,7 @@ export const WebSocketProvider = ({ children }) => {
 
     // Iniciar conexão WebSocket se estiver online
     let ws = null;
-    if (isOnline && !webSocketConnected) {
+    if (isOnline && !webSocketConnected && user?.id) {
       ws = connectWebSocket();
     }
 
@@ -556,7 +577,7 @@ export const WebSocketProvider = ({ children }) => {
         console.log("WebSocket fechado!");
       }
     };
-  }, [connectWebSocket, socket, webSocketConnected]);
+  }, [connectWebSocket, socket, webSocketConnected, user]);
 
   const contextValue = {
     socket,
