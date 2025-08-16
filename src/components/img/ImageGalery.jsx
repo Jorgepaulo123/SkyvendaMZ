@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight} from 'lucide-react';
+import { base_url } from "../../api/api";
 export default function ImageGallery({images}) {
     const [currentImage, setCurrentImage] = useState(0);
   
@@ -20,7 +21,7 @@ export default function ImageGallery({images}) {
     return (
       <div className="relative w-full h-[500px] bg-gray-100 rounded-lg overflow-hidden">
         <img
-          src={`https://skyvendamz-1.onrender.com/produto/${images[currentImage]}`}
+          src={`${base_url}/produto/${images[currentImage]}`}
           onError={(e) => e.target.src = 'imagem.jpg'}
           alt={`Property image ${currentImage + 1}`}
           className="w-full h-full object-cover"

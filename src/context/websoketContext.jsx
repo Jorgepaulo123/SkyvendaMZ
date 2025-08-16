@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 const WebSocketContext = createContext(null);
 
 // Constrói a URL do WebSocket de forma robusta
-function buildWsUrl(token) {
+function buildWsUrl(token, userId) {
   try {
     // Preferir o protocolo do backend (base_url) para evitar ws em produção https
     const apiUrl = new URL(base_url);
@@ -16,7 +16,8 @@ function buildWsUrl(token) {
     const url = new URL(base_url);
     const host = import.meta?.env?.VITE_WS_HOST ?? url.hostname ?? window.location.hostname;
     const port = (import.meta?.env?.VITE_WS_PORT ?? url.port) || (isHttps ? '443' : '80');
-    const path = import.meta?.env?.VITE_WS_PATH ?? '/ws';
+    const pathBase = import.meta?.env?.VITE_WS_PATH ?? '/ws';
+    const path = userId ? `${pathBase}/${userId}` : pathBase;
     const defaultPort = isHttps ? '443' : '80';
     const portPart = String(port) === defaultPort || String(port) === '' ? '' : `:${port}`;
     const q = token ? `?token=${encodeURIComponent(token)}` : '';
@@ -24,8 +25,9 @@ function buildWsUrl(token) {
   } catch (e) {
     // fallback para conversão simples
     const base = base_url.replace('http://', 'ws://').replace('https://', 'wss://');
+    const path = userId ? `/ws/${userId}` : '/ws';
     const q = token ? `?token=${encodeURIComponent(token)}` : '';
-    return `${base}/ws${q}`;
+    return `${base}${path}${q}`;
   }
 }
 
@@ -399,7 +401,7 @@ export const WebSocketProvider = ({ children }) => {
     if (webSocketConnected || isReconnecting || !isAuthenticated || !token || !isOnline) return;
 
     setIsReconnecting(true);
-    const wsUrl = buildWsUrl(token);
+    const wsUrl = buildWsUrl(token, user?.id);
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
