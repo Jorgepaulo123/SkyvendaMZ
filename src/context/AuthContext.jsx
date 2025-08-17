@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Função de cadastro
-  const signup = async (name, email, username, password) => {
+  const signup = async (name, email, username, password, referenciaCode) => {
     const formData = new FormData();
     formData.append('nome', name);
     formData.append('email', email);
@@ -85,14 +85,28 @@ export const AuthProvider = ({ children }) => {
     formData.append('senha', password);
     formData.append('tipo', 'nhonguista');
 
+    // Captura o código de referência da URL/localStorage, se não for passado explicitamente
+    let referencia = referenciaCode || null;
     try {
-      const res = await api.post('/usuario/cadastro', formData, {
+      if (!referencia && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        referencia = params.get('referencia') || localStorage.getItem('referencia') || null;
+      }
+    } catch {}
+
+    const endpoint = referencia
+      ? `/usuario/cadastro?referencia=${encodeURIComponent(referencia)}`
+      : '/usuario/cadastro';
+
+    try {
+      const res = await api.post(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       if (res.status === 200 || res.status === 201) {
         toast.success("Cadastrado com sucesso");
-        window.location.href ='login';
+        try { localStorage.removeItem('referencia'); } catch {}
+        window.location.href = 'login';
       }
     } catch (error) {
       if (error.message === "Network Error") {

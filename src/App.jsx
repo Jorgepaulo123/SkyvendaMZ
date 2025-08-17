@@ -66,11 +66,27 @@ import MeusAnuncios from './pages/MeusAnuncios';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import Terms from './pages/legal/Terms';
 
+// Capture 'referencia' from any URL and persist in localStorage
+function ReferralCapture() {
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const code = params.get('referencia');
+      if (code) {
+        localStorage.setItem('referencia', code);
+      }
+    } catch {}
+  }, [location.search]);
+  return null;
+}
+
 function App() {
   
 
   return (
     <Router>
+      <ReferralCapture />
       <LoadingProvider>
         <div className="relative min-h-screen ">
           <Toaster position="top-right" />
@@ -83,6 +99,7 @@ function App() {
                 <Routes>
                   {/* Auth Routes */}
                   <Route path="/signup" element={<Signup />} />
+                  <Route path="/cadastro" element={<Signup />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/recovery-password" element={<RecoveryPasseword />} />
                   <Route path="/auth/success" element={<Logining/>} />

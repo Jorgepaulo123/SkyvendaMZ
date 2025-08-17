@@ -30,6 +30,22 @@ export default function Login() {
   const { getToken, loading, isAuthenticated } = useContext(AuthContext) 
   const [loginLoading,setloginloading]=useState(false)
   const navigate = useNavigate();
+  const [refCode, setRefCode] = useState('');
+
+  // Detect and persist referral code from URL/localStorage
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlRef = params.get('referencia');
+      if (urlRef) {
+        setRefCode(urlRef);
+        try { localStorage.setItem('referencia', urlRef); } catch {}
+      } else {
+        const stored = localStorage.getItem('referencia');
+        if (stored) setRefCode(stored);
+      }
+    } catch {}
+  }, []);
 
   const handleSubmit = async (e) => {
     setloginloading(true)
@@ -53,6 +69,10 @@ export default function Login() {
       access_type: 'offline',
       prompt: 'consent',
     };
+
+    if (refCode) {
+      options.state = refCode;
+    }
 
     const queryString = new URLSearchParams(options).toString();
     window.location.href = `${baseUrl}?${queryString}`;

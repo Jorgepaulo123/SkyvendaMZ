@@ -10,6 +10,8 @@ export default function Logining() {
         // Guardar o token e o ID fixo (1) no localStorage
         localStorage.setItem("auth_token", token);
         localStorage.setItem("user_id", user_id);
+        // Limpar o código de referência se existir, já que a associação foi feita
+        try { localStorage.removeItem('referencia'); } catch {}
         
         setTimeout(() => {
             window.location.replace("/")

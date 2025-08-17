@@ -1,11 +1,20 @@
 import React, { useEffect } from 'react';
+import { base_url } from '../../api/api';
 
 export default function GoogleCallbackRedirect() {
   useEffect(() => {
     try {
-      const qs = window.location.search || '';
-      // Forward the Google callback (code, scope, etc.) to the backend handler
-      const target = `https://skyvenda-8k97.onrender.com/usuario/auth/callback${qs}`;
+      const original = new URLSearchParams(window.location.search || '');
+      // If Google didn't return our referral info explicitly, try to add it
+      if (!original.get('referencia')) {
+        try {
+          const storedRef = localStorage.getItem('referencia');
+          if (storedRef) original.append('referencia', storedRef);
+        } catch {}
+      }
+
+      // Forward the Google callback (code, state, scope, etc.) to the backend handler
+      const target = `${base_url}/usuario/auth/callback?${original.toString()}`;
       window.location.replace(target);
     } catch (e) {
       console.error('Erro ao redirecionar callback do Google:', e);

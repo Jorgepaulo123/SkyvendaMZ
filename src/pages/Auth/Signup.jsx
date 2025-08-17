@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader2, User, Mail, Lock, UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Link} from 'react-router-dom';
@@ -28,15 +28,31 @@ function Signup() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading,setLoading]=useState(false)
+  const [refCode, setRefCode] = useState('');
   
   const { signup } = useAuth();
+
+  // Detect and persist referral code from URL/localStorage
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlRef = params.get('referencia');
+      if (urlRef) {
+        setRefCode(urlRef);
+        try { localStorage.setItem('referencia', urlRef); } catch {}
+      } else {
+        const stored = localStorage.getItem('referencia');
+        if (stored) setRefCode(stored);
+      }
+    } catch {}
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true)
     
     try{
-      await signup(name, email, username, password);
+      await signup(name, email, username, password, refCode || undefined);
     }catch(e){
       console.log(e)
     }finally{
@@ -54,6 +70,11 @@ function Signup() {
       access_type: 'offline',
       prompt: 'consent',
     };
+
+    // Include referral code in OAuth state if present
+    if (refCode) {
+      options.state = refCode;
+    }
 
     const queryString = new URLSearchParams(options).toString();
     window.location.href = `${baseUrl}?${queryString}`;
@@ -136,6 +157,12 @@ function Signup() {
               'Criar conta'
             )}
           </button>
+
+          {refCode && (
+            <div className="text-[11px] sm:text-xs text-gray-600 text-center px-4 -mt-2">
+              Código de referência detectado: <span className="font-medium">{refCode}</span>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row flex-1 pt-8 items-center justify-between space-y-2 sm:space-y-0 text-xs sm:text-sm gap-2">
             <BotaoGoogle onClick={handleGoogleSignup} />

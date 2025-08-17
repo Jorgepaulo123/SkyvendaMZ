@@ -19,7 +19,7 @@ const api = axios.create({
 // Add a request interceptor to handle tokens if needed
 api.interceptors.request.use(function (config) {
     // You can add authorization headers here if needed
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
