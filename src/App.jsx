@@ -63,6 +63,8 @@ import WalletPage from './pages/Wallet/index';
 import Security from './pages/settings/security';
 import PasswordSettings from './pages/settings/password';
 import MeusAnuncios from './pages/MeusAnuncios';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+import Terms from './pages/legal/Terms';
 
 function App() {
   
@@ -85,6 +87,8 @@ function App() {
                   <Route path="/recovery-password" element={<RecoveryPasseword />} />
                   <Route path="/auth/success" element={<Logining/>} />
                   <Route path="/usuario/auth/callback" element={<GoogleCallbackRedirect/>} />
+                  <Route path="/privacidade" element={<PrivacyPolicy/>} />
+                  <Route path="/termos" element={<Terms/>} />
                    
                   {/* Public Routes */}
                   <Route path="/" element={<Layout><Home/></Layout>} />

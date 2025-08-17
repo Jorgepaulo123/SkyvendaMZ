@@ -143,6 +143,14 @@ function Signup() {
               Já tenho conta
             </Link>
           </div>
+
+          <p className="text-[11px] sm:text-xs text-gray-500 text-center px-4 leading-relaxed">
+            Ao continuar, você concorda com os
+            <Link to="/termos" className="text-indigo-600 hover:underline"> Termos de Serviço</Link>
+            {" "}e a
+            <Link to="/privacidade" className="text-indigo-600 hover:underline"> Política de Privacidade</Link>
+            {" "}da Skyvenda.
+          </p>
         </form>
 
         <div className="absolute bottom-12 left-0 right-0 flex justify-center items-center lg:hidden">
