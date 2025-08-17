@@ -34,6 +34,7 @@ import Notificacoes from './pages/notifications';
 import Friends from './pages/friends';
 import MobileMenu from './pages/mobilemenu';
 import Logining from './pages/google/logining';
+import GoogleCallbackRedirect from './pages/google/GoogleCallbackRedirect';
 import SettingsPage from './pages/settings';
 import Languages from './pages/languages';
 import Help from './pages/help';
@@ -83,6 +84,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/recovery-password" element={<RecoveryPasseword />} />
                   <Route path="/auth/success" element={<Logining/>} />
+                  <Route path="/usuario/auth/callback" element={<GoogleCallbackRedirect/>} />
                    
                   {/* Public Routes */}
                   <Route path="/" element={<Layout><Home/></Layout>} />
