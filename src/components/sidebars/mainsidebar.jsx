@@ -194,9 +194,23 @@ export function Sidebar() {
             </div>
           </div>
         ) : (
-          <Link to="/login" className="text-blue-500 hover:underline">
-            Fazer Login
-          </Link>
+          <div className="px-3 py-3">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3">
+              <p className="text-[13px] text-rose-600 mb-2">
+                Você não está autenticado na Skyvenda. Faça login ou crie uma conta para sugerirmos melhores produtos para si.
+                
+              </p>
+              <Link to="/login" className="inline-block text-center w-full text-[14px] rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 px-3 py-1.5">
+                Login
+              </Link>
+            </div>
+            {/* Links exigidos pelo Google logo abaixo da informação de login */}
+            <div className="mt-2 text-xs text-gray-600">
+              <Link to="/privacidade" className="text-indigo-600 hover:underline">Política de Privacidade</Link>
+              <span className="mx-2 text-gray-400">•</span>
+              <Link to="/termos" className="text-indigo-600 hover:underline">Termos de Serviço</Link>
+            </div>
+          </div>
         )}
 
         <nav className="flex-1 px-2 space-y-0.5">
