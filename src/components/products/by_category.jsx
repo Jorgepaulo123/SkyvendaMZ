@@ -66,10 +66,9 @@ const SuggestedProducts = () => {
   }
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('pt-MZ', {
-      style: 'currency',
-      currency: 'MZN'
-    }).format(price).replace('MZN', 'MT');
+    const n = Number(price) || 0;
+    // Formata com separadores PT-MZ e sufixo padronizado "MTn"
+    return `${new Intl.NumberFormat('pt-MZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)} MTn`;
   };
 
   return (
@@ -77,25 +76,24 @@ const SuggestedProducts = () => {
       {suggestedSections.map((section, index) => (
         <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm" key={index}>
           <h3 className="font-bold text-lg mb-3 text-gray-800">{section.title}</h3>
-          <div className="grid grid-cols-3 gap-2">
+          <ul className="grid grid-cols-3 gap-3">
             {section.products.map((product) => (
-              <div 
-                key={product.id} 
-                className="flex flex-col space-y-2 group cursor-pointer"
-              >
-                <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
-                  <img
-                    src={product.thumb} // Usando diretamente a URL completa do thumb
-                    onError={(e) => e.target.src = `${base_url}/default.png`}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
+              <li key={product.id} className="min-w-0">
+                <div className="flex flex-col space-y-2 group cursor-pointer min-w-0">
+                  <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+                    <img
+                      src={product.thumb} // Usando diretamente a URL completa do thumb
+                      onError={(e) => e.target.src = `${base_url}/default.png`}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                  </div>
+                  <h4 className="text-sm text-gray-700 truncate" title={product.title}>{product.title}</h4>
+                  <span className="block font-bold text-violet-600 text-sm">{formatPrice(product.price)}</span>
                 </div>
-                <h4 className="text-sm text-gray-700 line-clamp-1">{product.title}</h4>
-                <p className="font-bold text-[#7a4fed]"> {formatPrice(product.price)}</p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       ))}
     </div>
