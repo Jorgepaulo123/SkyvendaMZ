@@ -672,7 +672,7 @@ export default function Profile() {
                         ):(
                             <>
                             {/* perfil publico */}
-                           <div className="container min-h-screen  lg:px-[140px] pb-[100px]">
+                           <div className="container min-h-screen lg:px-[140px] pb-[100px]">
                                 <div className="w-full">
                                     <div className="flex flex-col md:flex-row gap-4 flex-1 justify-between">
                                          {/* area do avatar */}
@@ -685,8 +685,8 @@ export default function Profile() {
                                         </div>
 
                                         {/* area das opcoes e informacoes */}
-                                        <div className="w-full space-y-2 ">
-                                            <div className="flex items-start sm:items-center justify-between py-1 md:h-[40px] gap-2 sm:gap-4 w-full">
+                                        <div className="w-full space-y-2">
+                                            <div className="flex items-start sm:items-center justify-between py-1 gap-2 sm:gap-4 w-full">
                                                 <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
                                                     <span className='text-2xl sm:text-3xl font-extrabold leading-tight'>{userProfile.name || userProfile.username}</span>
@@ -706,7 +706,7 @@ export default function Profile() {
                                             </div>
                                                 <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
                                                     <button 
-                                                        className={`inline-flex items-center justify-center px-2 sm:px-3 py-2 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors w-full sm:w-auto ${followLoading ? 'opacity-75 cursor-not-allowed' : ''} ${userProfile.seguindo ? 'bg-gray-200 text-gray-900 hover:bg-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                                                        className={`inline-flex items-center justify-center px-3 sm:px-4 py-2 rounded text-sm sm:text-sm font-medium transition-colors w-full sm:w-auto ${followLoading ? 'opacity-75 cursor-not-allowed' : ''} ${userProfile.seguindo ? 'bg-gray-200 text-gray-900 hover:bg-gray-300' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                                                         disabled={followLoading}
                                                         onClick={() => {
                                                             if (!token) {
@@ -781,14 +781,14 @@ export default function Profile() {
                                                         )}
                                                     </button>
                                                     <button 
-                                                        className='bg-gray-200 py-2 px-2 sm:px-3 rounded-md hover:bg-gray-300 flex items-center justify-center gap-1 text-xs sm:text-sm w-full sm:w-auto'
+                                                        className='bg-gray-200 py-2 px-3 rounded-md hover:bg-gray-300 flex items-center justify-center gap-2 text-sm w-full sm:w-auto'
                                                         onClick={() => handleOpenChat(userProfile)}
                                                     >
-                                                        <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                        Mensagem
+                                                        <MessageCircle className="w-4 h-4" />
+                                                        <span>Mensagem</span>
                                                     </button>
-                                                    <button>
-                                                        <MoreHorizontal/>
+                                                    <button className='bg-gray-100 py-2 px-3 rounded-md hover:bg-gray-200 flex items-center justify-center w-full sm:w-auto'>
+                                                        <MoreHorizontal className="w-4 h-4"/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -835,7 +835,7 @@ export default function Profile() {
                                         <Link to={`/${username}/seguidores`} className={`uppercase transition-all duration-100  gap-2 py-2 flex items-center text-xs sm:text-sm flex-none text-gray-500 ${tabSelected==`/${username}/seguidores` && "font-bold text-gray-900 border-b-2 border-gray-900"}`}><Users/>Seguidores</Link>
                                     </div>
                                         {/* tabs content body */}
-                                        <div className="flex-1">
+                                        <div className="flex-1 bg-white">
                                             {tabSelected==`/${username}` &&(
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                                                     {loadingProducts ?(
@@ -905,7 +905,7 @@ export default function Profile() {
                                                         </div>
                                                     ) : (
                                                         publicacoes.map((publicacao) => (
-                                                            <div key={publicacao.id} className="bg-white rounded-lg shadow-md p-4">
+                                                            <div key={publicacao.id} className="bg-white rounded-lg shadow-sm p-4 border">
                                                                 <div className="flex items-center gap-3 mb-3">
                                                                     <img 
                                                                         src={publicacao.publicador.foto_perfil || '/avatar.png'} 
