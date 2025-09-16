@@ -6,7 +6,7 @@ import { Loader, Loader2, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Edit() {
-    const { user, token } = useAuth();
+    const { user, token, refreshUser } = useAuth();
     const [fileImage, setFileImage] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -66,6 +66,7 @@ export default function Edit() {
                 headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':`Bearer ${token}`}
             });
             toast.success('Tipo de usuário atualizado');
+            try { await refreshUser(); } catch {}
             setEditingType(false);
         }catch(err){
             const msg = err?.response?.data?.detail || 'Erro ao atualizar tipo';
