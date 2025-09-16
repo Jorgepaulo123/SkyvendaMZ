@@ -15,6 +15,7 @@ export default function Edit() {
     const [bio, setBio] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [selectedGender, setSelectedGender] = useState('');
+    const [selectedType, setSelectedType] = useState('');
     const dropdownRef = useRef(null);
     const [saving,setSaving]=useState(false);
     // estados de edição individual
@@ -36,6 +37,7 @@ export default function Edit() {
             setLoadingPageName(true);
             const formData = new URLSearchParams();
             formData.append('nome_pagina', pageName);
+            if (selectedType) formData.append('tipo', selectedType);
             await api.put('/usuario/atualizar', formData, {
                 headers:{'Content-Type':'application/x-www-form-urlencoded','Authorization':`Bearer ${token}`}
             });
@@ -101,6 +103,7 @@ export default function Edit() {
             setBio(user?.biografia);
             setPageName(user?.nome_pagina);
             setSelectedGender(user?.sexo);
+            setSelectedType(user?.tipo || 'cliente');
         }
     }, [user]);
 
@@ -128,6 +131,7 @@ export default function Edit() {
                 setContact(d.contacto||'');
                 setBio(d.biografia||'');
                 setSelectedGender(d.sexo||'');
+                setSelectedType(d.tipo || 'cliente');
             }catch(err){
                 console.error('Erro ao obter dados do usuário',err);
             }
@@ -273,6 +277,20 @@ export default function Edit() {
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">
+                        <h1 className="font-bold text-lg sm:text-xl">Tipo de usuário</h1>
+                        <select
+                            className="flex-1 border rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-white outline-none text-sm sm:text-base"
+                            value={selectedType}
+                            onChange={(e)=>setSelectedType(e.target.value)}
+                        >
+                            <option value="cliente">Cliente</option>
+                            <option value="nhonguista">Nhonguista</option>
+                            <option value="loja">Loja</option>
+                        </select>
+                        <p className="text-xs text-gray-500">Escolha como pretende usar a plataforma.</p>
+                    </div>
+
+                    <div className="flex w-full flex-col gap-2 sm:gap-3">
                         <h1 className="font-bold text-lg sm:text-xl">Biografia</h1>
                         <div className="flex items-start gap-2">
                             <textarea
@@ -288,6 +306,20 @@ export default function Edit() {
                                 {loadingBio ? <Loader2 className="w-4 h-4 animate-spin"/> : <Pencil className="w-4 h-4"/>}
                             </button>
                         </div>
+                    </div>
+
+                    <div className="flex w-full flex-col gap-2 sm:gap-3">
+                        <h1 className="font-bold text-lg sm:text-xl">Tipo de usuário</h1>
+                        <select
+                            className="flex-1 border rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-white outline-none text-sm sm:text-base"
+                            value={selectedType}
+                            onChange={(e)=>setSelectedType(e.target.value)}
+                        >
+                            <option value="cliente">Cliente</option>
+                            <option value="nhonguista">Nhonguista</option>
+                            <option value="loja">Loja</option>
+                        </select>
+                        <p className="text-xs text-gray-500">Escolha como pretende usar a plataforma.</p>
                     </div>
 
                     <div className="flex w-full flex-col gap-2 sm:gap-3">
