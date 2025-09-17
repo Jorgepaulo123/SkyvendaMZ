@@ -26,15 +26,32 @@ export default function Header() {
     const {isAuthenticated}=useAuth()
     // Controle de ocultar ao rolar
     const [hideOnScroll, setHideOnScroll] = useState(false);
+    const [headerTransform, setHeaderTransform] = useState(0);
     const lastYRef = useRef(0);
+    const headerRef = useRef(null);
+    
     useEffect(() => {
         const onScroll = () => {
             const y = window.scrollY || 0;
             const isDown = y > lastYRef.current;
             const threshold = 80;
-            setHideOnScroll(isDown && y > threshold);
+            
+            if (isDown && y > threshold) {
+                // Calculamos quanto o header deve subir, mas nunca mais que sua própria altura
+                const headerHeight = headerRef.current?.offsetHeight || 80;
+                // O header só pode subir até sua altura total, garantindo que pare no topo (0px)
+                const scrollDiff = y - threshold;
+                const maxTransform = Math.min(headerHeight - 1, scrollDiff); // -1 para manter 1px visível
+                setHeaderTransform(-maxTransform);
+                setHideOnScroll(true);
+            } else {
+                // Quando rolamos para cima ou estamos abaixo do threshold, mostra o header completamente
+                setHeaderTransform(0);
+                setHideOnScroll(false);
+            }
             lastYRef.current = y;
         };
+        
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
@@ -44,7 +61,11 @@ export default function Header() {
     return (
         <>
             {/* header desktop */}
-            <div className={`w-full py-3 sticky top-0 bg-white hidden md:block max_z_index_xl shadow-sm transform transition-transform duration-300 ${hideOnScroll ? '-translate-y-full' : 'translate-y-0'}`}>
+            <div 
+                ref={headerRef}
+                className="w-full py-3 sticky top-0 bg-white hidden md:block max_z_index_xl shadow-sm transition-transform duration-300"
+                style={{ transform: `translateY(${headerTransform}px)` }}
+            >
                 <div className="container mx-auto flex justify-between">
                     <Link to={'/'} className="flex items-center gap-2 lg:min-w-[300px] ">
                         <FaShopify className='text-[#7a4fed]' size={40} />
@@ -138,7 +159,10 @@ export default function Header() {
             </div>
 
             {/* Mobile Header */}
-            <div className={`md:hidden max_z_index px-4 border-b  border-gray-300 shadow-sm sticky top-0 z-50 bg-gradient-to-r backdrop:blur-md from-pink-50 to-red-50 transform transition-transform duration-300 ${hideOnScroll ? '-translate-y-full' : 'translate-y-0'}`}>
+            <div 
+                className="md:hidden max_z_index px-4 border-b border-gray-300 shadow-sm sticky top-0 z-50 bg-gradient-to-r backdrop:blur-md from-pink-50 to-red-50 transition-transform duration-300"
+                style={{ transform: `translateY(${headerTransform}px)` }}
+            >
                 {/* Top Row */}
                 <div className="flex justify-between items-center py-4">
                     <Link

@@ -2,7 +2,7 @@ import React from 'react'
 import AdsMore from '../../components/ads/ads'
 import ByCategory from '../../components/products/by_category'
 import JustForYou from '../../components/products/just_for_you'
-import MixedFeed from '../../components/MixedFeed'
+import DynamicFeed from '../../components/feed/DynamicFeed'
 import HomeCarousels from '../../components/home/HomeCarousels'
 import PromotionalBanners from '../../components/products/PromotionalBanners'
 import MainLayout from '../../components/layout/MainLayout'
@@ -11,7 +11,7 @@ function shuffle(arr){return arr.map(v=>({v,sort:Math.random()})).sort((a,b)=>a.
 
 export default function Home() {
   const sections=shuffle([
-            <MixedFeed key="mix"/>
+            <DynamicFeed key="dynamic-feed"/>
           ]);
 
   return (
