@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Header from '../header';
 import Header2 from '../header/header2';
 
 export default function MainLayout({ children }) {
@@ -25,13 +26,14 @@ export default function MainLayout({ children }) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header fixo */}
-      <div className="flex-none">
+      {/* Headers fixos */}
+      <Header />
+      <div className="flex-none fixed top-[90px] left-0 right-0 z-40 bg-white">
         <Header2 />
       </div>
 
-      {/* Área de conteúdo com scroll */}
-      <div className="flex-1">
+      {/* Área de conteúdo com scroll - compensando altura dos headers */}
+      <div className="flex-1 pt-[150px]">
         {children}
       </div>
     </div>

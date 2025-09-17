@@ -12,7 +12,7 @@ export default function Layout({children, header=true}) {
       <SideBar/>
       <div className="flex flex-1 flex-col bg-[#f8f8ff]">
         {header && <Header />}
-        <div className="flex flex-col flex-1">
+        <div className={`flex flex-col flex-1 ${header ? 'pt-[80px] md:pt-[90px]' : ''}`}>
           {children}
         </div>
       </div> 

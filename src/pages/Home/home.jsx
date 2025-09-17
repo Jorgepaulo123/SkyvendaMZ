@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <MainLayout>
-      <div className="pt-[60px] md:pt-[60px]"> {/* Ajuste para o header fixo */}
+      <div> {/* MainLayout já cuida do padding do header */}
         <div className="container mx-auto py-2 gap-4">
           <AdsMore/>
           <ByCategory/>
