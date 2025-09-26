@@ -3,6 +3,7 @@ import AdsMore from '../../components/ads/ads'
 import ByCategory from '../../components/products/by_category'
 import JustForYou from '../../components/products/just_for_you'
 import MixedFeed from '../../components/MixedFeed'
+import FeedHome from '../../components/feed/FeedHome'
 import HomeCarousels from '../../components/home/HomeCarousels'
 import PromotionalBanners from '../../components/products/PromotionalBanners'
 import MainLayout from '../../components/layout/MainLayout'
@@ -17,6 +18,10 @@ export default function Home() {
   return (
     <MainLayout>
       <div className="pt-[60px] md:pt-[60px]"> {/* Ajuste para o header fixo */}
+        {/* Nova experiência tipo rede social */}
+        <FeedHome/>
+
+        {/* Seções adicionais já existentes */}
         <div className="container mx-auto py-2 gap-4">
           <AdsMore/>
           <ByCategory/>
