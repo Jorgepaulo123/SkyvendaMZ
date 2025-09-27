@@ -30,6 +30,13 @@ export default function DepositForm() {
   const [step, setStep] = useState(1);
   const [pinOpen, setPinOpen] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
+  const [pinSessionKey, setPinSessionKey] = useState(() => {
+    try {
+      return localStorage.getItem('pin_session_key') || '';
+    } catch (_) {
+      return '';
+    }
+  });
 
   // Auto-capture on return from PayPal
   useEffect(() => {
@@ -44,45 +51,56 @@ export default function DepositForm() {
         setPaypalOrderId(orderToken);
         // Clear the query params from URL after processing to avoid re-trigger
         window.history.replaceState({}, document.title, window.location.pathname);
-        // Require PIN to confirm payment
-        setPinOpen(true);
+        // Auto-capture using previously authorized PIN session
+        (async () => {
+          try {
+            setIsProcessing(true);
+            const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+            const headers = {
+              Authorization: `Bearer ${token}`,
+              'Idempotency-Key': idem,
+              'Pin-Session-Key': pinSessionKey || localStorage.getItem('pin_session_key') || ''
+            };
+            const res = await api.post(`/paypal/orders/${orderToken}/capture`, null, { headers });
+            if (res.data?.status === 'COMPLETED') {
+              toast.success('Depósito via PayPal confirmado com PIN!');
+              setSuccessMessage('Depósito via PayPal confirmado com PIN!');
+              resetForm();
+            } else {
+              toast.error(`Falha ao capturar pagamento: ${res.data?.status || 'status desconhecido'}`);
+            }
+          } catch (err) {
+            console.error('Erro ao auto-capturar PayPal (PIN session):', err);
+            const msg = err?.response?.data?.detail || err?.message || 'Não foi possível confirmar o pagamento.';
+            setErrorMessage(String(msg));
+          } finally {
+            setIsProcessing(false);
+          }
+        })();
       }
     } catch (_) {
       // ignore
     }
   }, []);
 
-  const handlePinSubmit = async (pin) => {
-    if (!paypalOrderId) {
-      setErrorMessage('Pedido PayPal não encontrado.');
-      return;
-    }
+  const authorizePinThenProceed = async (pin) => {
+    // 1) Authorize PIN session
+    const pinKey = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
     try {
       setPinLoading(true);
-      const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
       const headers = {
         Authorization: `Bearer ${token}`,
-        'Idempotency-Key': idem
+        'Idempotency-Key': pinKey
       };
-      const res = await api.post(`/paypal/orders/${paypalOrderId}/capture`, null, {
-        headers,
-        params: { pin }
-      });
-      if (res.data?.status === 'COMPLETED') {
-        toast.success('Depósito via PayPal confirmado com PIN!');
-        setSuccessMessage('Depósito via PayPal confirmado com PIN!');
-        setPinOpen(false);
-        resetForm();
-      } else {
-        toast.error(`Falha ao capturar pagamento: ${res.data?.status || 'status desconhecido'}`);
-      }
-    } catch (err) {
-      console.error('Erro ao confirmar PayPal com PIN:', err);
-      const msg = err?.response?.data?.detail || err?.message || 'Não foi possível confirmar o pagamento.';
-      setErrorMessage(String(msg));
+      await api.post('/paypal/pin/authorize', null, { headers, params: { pin } });
+      setPinSessionKey(pinKey);
+      try { localStorage.setItem('pin_session_key', pinKey); } catch (_) {}
     } finally {
       setPinLoading(false);
     }
+
+    // 2) Proceed to create PayPal order and redirect
+    await handleDeposit(true);
   };
 
   const resetForm = () => {
@@ -377,7 +395,7 @@ export default function DepositForm() {
               
               {currency === 'USD' && selectedPaymentMethod === 'paypal' && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
-                  Ao selecionar PayPal, abriremos a página de aprovação em uma nova aba. Após aprovar e retornar, pediremos seu PIN para confirmar o pagamento com máxima segurança.
+                  Ao selecionar PayPal, confirmaremos seu PIN antes de redirecionar para o PayPal. Após aprovar, o depósito será confirmado automaticamente.
                 </div>
               )}
 
@@ -417,7 +435,14 @@ export default function DepositForm() {
                   <div className="flex-1 flex gap-2">
                     <button
                       type="button"
-                      onClick={handleDeposit}
+                      onClick={async () => {
+                        // Require PIN session before creating order
+                        if (!pinSessionKey) {
+                          setPinOpen(true);
+                        } else {
+                          await handleDeposit();
+                        }
+                      }}
                       className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors flex items-center justify-center"
                       disabled={isProcessing}
                     >
@@ -435,7 +460,7 @@ export default function DepositForm() {
         open={pinOpen}
         mode="confirm"
         onClose={() => setPinOpen(false)}
-        onSubmit={handlePinSubmit}
+        onSubmit={authorizePinThenProceed}
         loading={pinLoading}
       />
       </div>
