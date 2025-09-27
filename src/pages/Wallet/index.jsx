@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard, Clock, Plus, FileText, AlertTriangle } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard, Clock, Plus, FileText, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FaPaypal, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
 import { SiMoneygram } from 'react-icons/si';
@@ -24,6 +24,13 @@ export default function WalletPage() {
   const [userData, setUserData] = useState({
     username: ""
   });
+  const [hideBalance, setHideBalance] = useState(() => {
+    try {
+      return localStorage.getItem('wallet_hide_balance') === '1';
+    } catch (_) {
+      return false;
+    }
+  });
   
   const navigate = useNavigate();
 
@@ -40,6 +47,12 @@ export default function WalletPage() {
       // ignore
     }
   }, [navigate]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wallet_hide_balance', hideBalance ? '1' : '0');
+    } catch (_) {}
+  }, [hideBalance]);
 
   const loadData = async () => {
     try {
@@ -196,8 +209,20 @@ export default function WalletPage() {
                   </div>
                 </div>
                 <div className="mt-3 sm:mt-4">
-                  <div className="text-xs sm:text-sm opacity-80">Saldo principal</div>
-                  <div className="text-xl sm:text-3xl font-bold">{formatValue(cardData.saldo_principal)} MZN</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs sm:text-sm opacity-80">Saldo principal</div>
+                    <button
+                      type="button"
+                      className="p-1 rounded hover:bg-white/10 transition"
+                      aria-label={hideBalance ? 'Mostrar saldo' : 'Esconder saldo'}
+                      onClick={() => setHideBalance(v => !v)}
+                    >
+                      {hideBalance ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <div className="text-xl sm:text-3xl font-bold">
+                    {hideBalance ? '••••••' : `${formatValue(cardData.saldo_principal)} MZN`}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between mt-3 sm:mt-4">
                   <div className="text-xs sm:text-sm opacity-90">
@@ -351,9 +376,9 @@ export default function WalletPage() {
                               <span className="text-gray-500">Usuário:</span>
                               <span className="font-medium">{userData.username || ''}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                               <span className="text-gray-500">Saldo Principal:</span>
-                              <span className="font-medium text-green-600">{formatValue(cardData.saldo_principal)} MZN</span>
+                              <span className="font-medium text-green-600">{hideBalance ? '••••••' : `${formatValue(cardData.saldo_principal)} MZN`}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">Saldo Congelado:</span>
