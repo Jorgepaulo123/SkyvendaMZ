@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../api/api';
@@ -27,6 +27,48 @@ export default function DepositForm() {
   const [paypalOrderId, setPaypalOrderId] = useState(null);
   const [paypalApproveLink, setPaypalApproveLink] = useState(null);
   const [step, setStep] = useState(1);
+
+  // Auto-capture on return from PayPal
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const isSuccess = params.get('paypal') === 'success';
+      const orderToken = params.get('token'); // PayPal usually returns order ID as 'token'
+      if (isSuccess && orderToken) {
+        setCurrency('USD');
+        setSelectedPaymentMethod('paypal');
+        setStep(2);
+        setPaypalOrderId(orderToken);
+        // Clear the query params from URL after processing to avoid re-trigger
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Auto-capture
+        (async () => {
+          try {
+            setIsProcessing(true);
+            const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+            const headers = {
+              Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
+              'Idempotency-Key': idem
+            };
+            const res = await api.post(`/paypal/orders/${orderToken}/capture`, {}, { headers });
+            if (res.data?.status === 'COMPLETED') {
+              toast.success('Depósito via PayPal concluído automaticamente!');
+              setSuccessMessage('Depósito via PayPal concluído automaticamente!');
+              resetForm();
+            } else {
+              toast.error(`Falha ao capturar pagamento: ${res.data?.status || 'status desconhecido'}`);
+            }
+          } catch (err) {
+            console.error('Erro ao auto-capturar PayPal:', err);
+          } finally {
+            setIsProcessing(false);
+          }
+        })();
+      }
+    } catch (_) {
+      // ignore
+    }
+  }, []);
 
   const resetForm = () => {
     setDepositAmount('');
@@ -203,6 +245,11 @@ export default function DepositForm() {
                   placeholder={currency === 'USD' ? 'Ex: 10' : 'Ex: 100'}
                   required
                 />
+                {currency === 'USD' && depositAmount && parseFloat(depositAmount) > 0 && (
+                  <p className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2">
+                    Você pagará <strong>{Number(depositAmount).toFixed(2)} USD</strong> e receberá aproximadamente <strong>{(Number(depositAmount) * 63).toFixed(0)} MZN</strong> na SkyWallet (taxa fixa 63 MZN por 1 USD).
+                  </p>
+                )}
               </div>
 
               <div>

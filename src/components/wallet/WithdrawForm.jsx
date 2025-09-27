@@ -391,6 +391,11 @@ export default function WithdrawForm() {
                   <p className="mt-2 text-sm text-gray-500">
                     O valor será enviado para sua conta PayPal associada a este email. A conversão será feita pela taxa fixa de 70 MZN por 1 USD.
                   </p>
+                  {withdrawAmount && parseFloat(withdrawAmount) > 0 && (
+                    <p className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2">
+                      Você sacará <strong>{parseInt(withdrawAmount, 10)} MZN</strong> e receberá aproximadamente <strong>{(Number(withdrawAmount) / 70).toFixed(2)} USD</strong> no PayPal (taxa fixa 70 MZN por 1 USD).
+                    </p>
+                  )}
                 </div>
               )}
               <div className="flex items-center justify-between gap-4">

@@ -29,6 +29,16 @@ export default function WalletPage() {
 
   useEffect(() => {
     loadData();
+    // If redirected from PayPal, open the Deposit tab for auto-capture flow
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const hasPaypalParam = params.has('paypal');
+      if (hasPaypalParam) {
+        setActiveTab('deposit');
+      }
+    } catch (_) {
+      // ignore
+    }
   }, [navigate]);
 
   const loadData = async () => {
