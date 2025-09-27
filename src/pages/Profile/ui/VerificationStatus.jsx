@@ -16,11 +16,12 @@ export function VerificationStatus({ estadoRevisao }) {
     );
   }
 
-  if (v === 'pendente') {
+  if (v === 'pendente' || v === 'processando') {
     return <PendingCard />;
   }
   
-  if (v === 'recusado' || v === 'nao' || v === 'não' || v === 'rejeitado' || v === 'reprovado') {
+  // Rejeitado explicitamente pelo time de revisão
+  if (v === 'recusado' || v === 'rejeitado' || v === 'reprovado') {
     return <RejectedCard />;
   }
   

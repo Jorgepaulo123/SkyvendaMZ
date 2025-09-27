@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { HomeContext } from './HomeProvider';
 import ProductCard from './ProductCard';
 import { ModernCard } from './cards/ModernCard';
-
+ 
 function ProductList() {
   const { produtos, loading, handleScroll } = useContext(HomeContext);
 
