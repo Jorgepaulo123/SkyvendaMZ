@@ -14,6 +14,7 @@ export default function WithdrawForm() {
   const { token } = useAuth();
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [paypalEmail, setPaypalEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -80,7 +81,7 @@ export default function WithdrawForm() {
     }
 
     if (selectedPaymentMethod === 'paypal') {
-      if (!email || !email.includes('@')) {
+      if (!paypalEmail || !paypalEmail.includes('@')) {
         setErrorMessage('Por favor, insira um email válido');
         return;
       }
@@ -92,7 +93,8 @@ export default function WithdrawForm() {
     // Guardar dados e abrir modal do PIN
     setPendingData({
       valor: parseInt(withdrawAmount, 10),
-      telefone: phoneNumber
+      telefone: phoneNumber,
+      paypalEmail: paypalEmail
     });
     setPinOpen(true);
   };
@@ -100,17 +102,36 @@ export default function WithdrawForm() {
   const handlePinSubmit = async (pin) => {
     try {
       setPinLoading(true);
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      };
-      const params = new URLSearchParams();
-      params.set('msisdn', pendingData.telefone);
-      params.set('valor', String(pendingData.valor));
-      params.set('pin', pin);
-      await api.post(`/usuario/${userId}/pagamento/`, params, { headers });
-      toast.success(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso!`);
-      setSuccessMessage(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso! Aguarde o processamento.`);
+      if (selectedPaymentMethod === 'paypal') {
+        // PayPal payout: use JSON + Idempotency-Key
+        const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Idempotency-Key': idem
+        };
+        await api.post(`/paypal/payouts/create`, null, {
+          headers,
+          params: {
+            receiver_email: pendingData.paypalEmail,
+            amount_mzn: parseInt(pendingData.valor, 10)
+          }
+        });
+        toast.success(`Solicitação de saque para PayPal criada com sucesso! (${pendingData.valor} MTn → USD @70)`);
+        setSuccessMessage(`Saque para PayPal solicitado com sucesso. Você receberá em USD equivalente a ${pendingData.valor} MTn pela taxa 70 MZN/USD.`);
+      } else {
+        // M-Pesa path (mantido como antes)
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        };
+        const params = new URLSearchParams();
+        params.set('msisdn', pendingData.telefone);
+        params.set('valor', String(pendingData.valor));
+        params.set('pin', pin);
+        await api.post(`/usuario/${userId}/pagamento/`, params, { headers });
+        toast.success(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso!`);
+        setSuccessMessage(`Solicitação de saque de ${pendingData.valor} MTn enviada com sucesso! Aguarde o processamento.`);
+      }
       setPinOpen(false);
       resetForm();
     } catch (error) {
@@ -361,18 +382,17 @@ export default function WithdrawForm() {
                   <input
                     type="email"
                     id="paypalEmail"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={paypalEmail}
+                    onChange={(e) => setPaypalEmail(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="seu.email@exemplo.com"
                     required
                   />
                   <p className="mt-2 text-sm text-gray-500">
-                    O valor será enviado para sua conta PayPal associada a este email.
+                    O valor será enviado para sua conta PayPal associada a este email. A conversão será feita pela taxa fixa de 70 MZN por 1 USD.
                   </p>
                 </div>
               )}
-              
               <div className="flex items-center justify-between gap-4">
                 <button
                   type="button"
