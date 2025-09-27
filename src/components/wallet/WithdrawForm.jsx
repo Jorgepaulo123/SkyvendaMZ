@@ -113,7 +113,8 @@ export default function WithdrawForm() {
           headers,
           params: {
             receiver_email: pendingData.paypalEmail,
-            amount_mzn: parseInt(pendingData.valor, 10)
+            amount_mzn: parseInt(pendingData.valor, 10),
+            pin
           }
         });
         toast.success(`Solicitação de saque para PayPal criada com sucesso! (${pendingData.valor} MTn → USD @70)`);
