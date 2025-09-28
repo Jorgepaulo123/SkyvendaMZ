@@ -100,6 +100,10 @@ export default function DepositForm() {
     }
 
     // 2) Proceed to create PayPal order and redirect
+    setPinOpen(false);
+    // Garantir seleção PayPal
+    setCurrency('USD');
+    setSelectedPaymentMethod('paypal');
     await handleDeposit(true);
   };
 
@@ -114,7 +118,9 @@ export default function DepositForm() {
   };
 
   const handleDeposit = async (e) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       setErrorMessage('Por favor, insira um valor válido');
@@ -183,9 +189,11 @@ export default function DepositForm() {
         setPaypalApproveLink(approve_link || null);
         // Abrir janela de aprovação, se link existir
         if (approve_link) {
-          window.open(approve_link, '_blank', 'noopener,noreferrer');
+          // Redirect in the same tab to avoid popup blockers and ensure smooth flow
+          window.location.href = approve_link;
+          return; // stop further UI updates; navigation will occur
         }
-        toast.success('Pedido criado no PayPal. Após aprovar, clique em Confirmar Pagamento.');
+        toast.error('Link de aprovação do PayPal indisponível. Tente novamente em alguns segundos.');
       }
       
     } catch (error) {
