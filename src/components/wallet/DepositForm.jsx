@@ -3,8 +3,7 @@ import { AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
-import PinModal from '../modals/PinModal';
-// PIN modal removed: deposits no longer require PIN
+// Deposits no longer require PIN (PayPal)
 
 export default function DepositForm() {
   const { token, user } = useAuth();
@@ -28,15 +27,7 @@ export default function DepositForm() {
   const [paypalOrderId, setPaypalOrderId] = useState(null);
   const [paypalApproveLink, setPaypalApproveLink] = useState(null);
   const [step, setStep] = useState(1);
-  const [pinOpen, setPinOpen] = useState(false);
-  const [pinLoading, setPinLoading] = useState(false);
-  const [pinSessionKey, setPinSessionKey] = useState(() => {
-    try {
-      return localStorage.getItem('pin_session_key') || '';
-    } catch (_) {
-      return '';
-    }
-  });
+  // Removed PIN modal/session for deposits
 
   // Auto-capture on return from PayPal
   useEffect(() => {
@@ -51,15 +42,14 @@ export default function DepositForm() {
         setPaypalOrderId(orderToken);
         // Clear the query params from URL after processing to avoid re-trigger
         window.history.replaceState({}, document.title, window.location.pathname);
-        // Auto-capture using previously authorized PIN session
+        // Auto-capture on return (PIN not required)
         (async () => {
           try {
             setIsProcessing(true);
             const idem = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
             const headers = {
               Authorization: `Bearer ${token}`,
-              'Idempotency-Key': idem,
-              'Pin-Session-Key': pinSessionKey || localStorage.getItem('pin_session_key') || ''
+              'Idempotency-Key': idem
             };
             const res = await api.post(`/paypal/orders/${orderToken}/capture`, null, { headers });
             if (res.data?.status === 'COMPLETED') {
@@ -83,29 +73,7 @@ export default function DepositForm() {
     }
   }, []);
 
-  const authorizePinThenProceed = async (pin) => {
-    // 1) Authorize PIN session
-    const pinKey = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    try {
-      setPinLoading(true);
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        'Idempotency-Key': pinKey
-      };
-      await api.post('/paypal/pin/authorize', null, { headers, params: { pin } });
-      setPinSessionKey(pinKey);
-      try { localStorage.setItem('pin_session_key', pinKey); } catch (_) {}
-    } finally {
-      setPinLoading(false);
-    }
-
-    // 2) Proceed to create PayPal order and redirect
-    setPinOpen(false);
-    // Garantir seleção PayPal
-    setCurrency('USD');
-    setSelectedPaymentMethod('paypal');
-    await handleDeposit(true);
-  };
+  // PIN flow removed
 
   const resetForm = () => {
     setDepositAmount('');
@@ -403,7 +371,7 @@ export default function DepositForm() {
               
               {currency === 'USD' && selectedPaymentMethod === 'paypal' && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
-                  Ao selecionar PayPal, confirmaremos seu PIN antes de redirecionar para o PayPal. Após aprovar, o depósito será confirmado automaticamente.
+                  Ao selecionar PayPal, redirecionaremos para a página de aprovação. Após aprovar, o depósito será confirmado automaticamente.
                 </div>
               )}
 
@@ -443,14 +411,7 @@ export default function DepositForm() {
                   <div className="flex-1 flex gap-2">
                     <button
                       type="button"
-                      onClick={async () => {
-                        // Require PIN session before creating order
-                        if (!pinSessionKey) {
-                          setPinOpen(true);
-                        } else {
-                          await handleDeposit();
-                        }
-                      }}
+                      onClick={async () => { await handleDeposit(); }}
                       className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors flex items-center justify-center"
                       disabled={isProcessing}
                     >
@@ -463,14 +424,7 @@ export default function DepositForm() {
           </form>
         )}
 
-      {/* PIN modal for PayPal confirmation */}
-      <PinModal
-        open={pinOpen}
-        mode="confirm"
-        onClose={() => setPinOpen(false)}
-        onSubmit={authorizePinThenProceed}
-        loading={pinLoading}
-      />
+      {/* PIN modal removed for PayPal deposits */}
       </div>
     </div>
   );
