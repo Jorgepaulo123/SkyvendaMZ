@@ -464,6 +464,27 @@ export default function WalletPage() {
                           const counterparty = transaction?.msisdn || (isEntrada ? 'Origem' : 'Destino');
                           const directionText = isEntrada ? `De: ${counterparty}` : `Para: ${counterparty}`;
                           const actionText = transaction?.accao ? ` • ${transaction.accao}` : '';
+
+                          // Map internal status to PayPal webhook-like labels for withdrawals
+                          let payoutBadge = null;
+                          if (!isEntrada) {
+                            const st = (transaction.status || '').toLowerCase();
+                            let label = 'PAYOUT PROCESSING';
+                            let cls = 'bg-amber-100 text-amber-700 border-amber-200';
+                            if (st === 'sucesso') {
+                              label = 'PAYMENT.PAYOUTS-ITEM.SUCCEEDED';
+                              cls = 'bg-green-100 text-green-700 border-green-200';
+                            } else if (st.startsWith('erro')) {
+                              label = 'PAYMENT.PAYOUTS-ITEM.FAILED';
+                              cls = 'bg-red-100 text-red-700 border-red-200';
+                            }
+                            payoutBadge = (
+                              <span className={`inline-block mt-1 px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium ${cls}`}>
+                                {label}
+                              </span>
+                            );
+                          }
+
                           return (
                             <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl">
                               <div className="flex items-center gap-2 sm:gap-3">
@@ -479,6 +500,7 @@ export default function WalletPage() {
                                   <div className="text-xs sm:text-sm text-gray-600">
                                     {directionText}{actionText}
                                   </div>
+                                  {payoutBadge}
                                   <div className="flex items-center text-[11px] sm:text-xs text-gray-500 mt-0.5">
                                     <Clock className="w-3 h-3 mr-1" />
                                     {formatDate(transaction.data_hora)}
