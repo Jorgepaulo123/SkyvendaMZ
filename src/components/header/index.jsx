@@ -130,7 +130,7 @@ export default function Header() {
 
             {/* Mobile Header */}
             <div 
-                className="md:hidden max_z_index px-4 border-b border-gray-300 shadow-sm fixed top-0 left-0 right-0 z-50 bg-gradient-to-r backdrop:blur-md from-pink-50 to-red-50"
+                className="md:hidden max_z_index px-4 border-b border-gray-300 shadow-sm fixed top-0 left-0 right-0 z-50 bg-gradient-to-r backdrop:blur-md bg-white"
             >
                 {/* Top Row */}
                 <div className="flex justify-between items-center py-4">
@@ -142,15 +142,15 @@ export default function Header() {
                         <span>SkyVenda MZ</span>
                     </Link>
                     <div className="flex items-center">
-                        <button onClick={() => setShowPostDialog(true)} className="text-gray-600 mr-4 bg-gradient-to-r from-pink-100 to-red-100 p-2 rounded-full">
+                        <button onClick={() => setShowPostDialog(true)} className="text-gray-600 mr-4 bg-[#FDE68A20] p-2 rounded-full">
                             <FaPlus size={24} />
                         </button>
-                        <button onClick={() => navigate('/m/search')} className="text-gray-600 mr-4 bg-gradient-to-r from-pink-100 to-red-100 p-2 rounded-full">
+                        <button onClick={() => navigate('/m/search')} className="text-gray-600 mr-4 bg-[#FDE68A20] p-2 rounded-full">
                             <FiSearch size={24} />
                         </button>
                         <button
                             onClick={() => navigate('/menu')}
-                            className="text-gray-600 relative  bg-gradient-to-r from-pink-100 to-red-100 p-2 rounded-full"
+                            className="text-gray-600 relative  bg-[#FDE68A20] p-2 rounded-full"
                         >
                             <Menu size={24} />
                         </button>

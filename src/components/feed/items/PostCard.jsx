@@ -23,9 +23,9 @@ export default function PostCard({ data }) {
   const gradientClass = gradientStyles[data.gradient_style] || gradientStyles.default;
 
   return (
-    <div className="bg-white border-b border-gray-200 md:mb-4 md:shadow-sm md:border md:border-gray-100 md:rounded-lg overflow-hidden">
+    <div className="bg-white border-b border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between px-4 py-3">
         <button 
           onClick={handleUserPress}
           className="flex items-center space-x-3 flex-1"
@@ -33,7 +33,7 @@ export default function PostCard({ data }) {
           <img
             src={data.user?.avatar || 'https://via.placeholder.com/40x40?text=U'}
             alt={data.user?.name}
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full object-cover border-2 border-gray-100"
           />
           <div className="flex-1 text-left">
             <h3 className="font-semibold text-gray-900 text-sm">
@@ -42,39 +42,39 @@ export default function PostCard({ data }) {
             <p className="text-xs text-gray-500">{data.time}</p>
           </div>
         </button>
-        <button className="p-2 hover:bg-gray-100 rounded-full">
+        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
           <MoreHorizontal size={20} className="text-gray-600" />
         </button>
       </div>
 
       {/* Post Content */}
-      <div className={`mx-4 mb-4 p-6 rounded-lg ${gradientClass} min-h-[120px] flex items-center justify-center`}>
+      <div className={`mx-4 mb-4 p-6 rounded-xl ${gradientClass} min-h-[140px] flex items-center justify-center shadow-sm`}>
         <p className="text-white text-center text-base leading-relaxed font-medium">
           {data.content}
         </p>
       </div>
 
       {/* Action Bar */}
-      <div className="flex items-center justify-between p-4 pt-0">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
         <div className="flex items-center space-x-6">
           <button
             onClick={() => setLiked(!liked)}
             className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors"
           >
             <Heart 
-              size={20} 
+              size={22} 
               className={liked ? 'text-red-500 fill-current' : ''} 
             />
-            <span className="text-sm">{data.likes || 0}</span>
+            <span className="text-sm font-medium">{data.likes || 0}</span>
           </button>
           
           <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
-            <MessageCircle size={20} />
-            <span className="text-sm">{data.comments || 0}</span>
+            <MessageCircle size={22} />
+            <span className="text-sm font-medium">{data.comments || 0}</span>
           </button>
           
           <button className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-colors">
-            <Share2 size={20} />
+            <Share2 size={22} />
           </button>
         </div>
 
@@ -83,8 +83,8 @@ export default function PostCard({ data }) {
           className="text-gray-600 hover:text-indigo-500 transition-colors"
         >
           <svg 
-            width={20} 
-            height={20} 
+            width={22} 
+            height={22} 
             viewBox="0 0 24 24" 
             fill={bookmarked ? 'currentColor' : 'none'}
             stroke="currentColor" 
