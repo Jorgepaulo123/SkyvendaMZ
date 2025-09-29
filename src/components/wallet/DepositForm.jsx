@@ -100,6 +100,11 @@ export default function DepositForm() {
         setErrorMessage('Por favor, insira um número de telefone válido (9 dígitos)');
         return;
       }
+      // Validar prefixo M-Pesa: 84/85/86/87
+      if (!/^(84|85|86|87)\d{7}$/.test(phoneNumber)) {
+        setErrorMessage('Insira um número M-Pesa válido começando por 84, 85, 86 ou 87.');
+        return;
+      }
     }
 
     // Métodos suportados por moeda:
@@ -169,7 +174,12 @@ export default function DepositForm() {
       if (error.message === 'ID do usuário não encontrado') {
         setErrorMessage('Erro de autenticação. Por favor, faça login novamente.');
       } else {
-        setErrorMessage(error.response?.data?.detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
+        const detail = error.response?.data?.detail || '';
+        if (typeof detail === 'string' && detail.includes('INS-2051')) {
+          setErrorMessage('Erro M-Pesa (INS-2051): MSISDN inválido. Confirme que é um número M-Pesa ativo (84/85/86/87) e tente novamente.');
+        } else {
+          setErrorMessage(detail || 'Ocorreu um erro ao processar seu depósito. Por favor, tente novamente.');
+        }
       }
     } finally {
       setIsProcessing(false);
