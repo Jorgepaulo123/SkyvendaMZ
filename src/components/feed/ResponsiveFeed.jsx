@@ -174,7 +174,7 @@ export default function ResponsiveFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white pt-[130px]">
+    <div className="bg-white pt-[126px]">
       <NewPostInput />
       <div className="px-4 pb-3">
         <BannerSlider />
