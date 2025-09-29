@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard, Clock, Plus, FileText, AlertTriangle } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard, Clock, Plus, FileText, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FaPaypal, FaCcVisa, FaCcMastercard } from 'react-icons/fa';
 import { SiMoneygram } from 'react-icons/si';
@@ -24,12 +24,35 @@ export default function WalletPage() {
   const [userData, setUserData] = useState({
     username: ""
   });
+  const [hideBalance, setHideBalance] = useState(() => {
+    try {
+      return localStorage.getItem('wallet_hide_balance') === '1';
+    } catch (_) {
+      return false;
+    }
+  });
   
   const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
+    // If redirected from PayPal, open the Deposit tab for auto-capture flow
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const hasPaypalParam = params.has('paypal');
+      if (hasPaypalParam) {
+        setActiveTab('deposit');
+      }
+    } catch (_) {
+      // ignore
+    }
   }, [navigate]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wallet_hide_balance', hideBalance ? '1' : '0');
+    } catch (_) {}
+  }, [hideBalance]);
 
   const loadData = async () => {
     try {
@@ -102,6 +125,22 @@ export default function WalletPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const reconcilePayout = async (referencia) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Sessão expirada. Faça login.');
+      await api.post('/paypal/payouts/reconcile', null, {
+        params: { referencia },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Status atualizado.');
+      await loadData();
+    } catch (err) {
+      const msg = err?.response?.data?.detail || err?.message || 'Falha ao atualizar status.';
+      toast.error(String(msg));
     }
   };
 
@@ -186,8 +225,20 @@ export default function WalletPage() {
                   </div>
                 </div>
                 <div className="mt-3 sm:mt-4">
-                  <div className="text-xs sm:text-sm opacity-80">Saldo principal</div>
-                  <div className="text-xl sm:text-3xl font-bold">{formatValue(cardData.saldo_principal)} MZN</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs sm:text-sm opacity-80">Saldo principal</div>
+                    <button
+                      type="button"
+                      className="p-1 rounded hover:bg-white/10 transition"
+                      aria-label={hideBalance ? 'Mostrar saldo' : 'Esconder saldo'}
+                      onClick={() => setHideBalance(v => !v)}
+                    >
+                      {hideBalance ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <div className="text-xl sm:text-3xl font-bold">
+                    {hideBalance ? '••••••' : `${formatValue(cardData.saldo_principal)} MZN`}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between mt-3 sm:mt-4">
                   <div className="text-xs sm:text-sm opacity-90">
@@ -341,9 +392,9 @@ export default function WalletPage() {
                               <span className="text-gray-500">Usuário:</span>
                               <span className="font-medium">{userData.username || ''}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between items-center">
                               <span className="text-gray-500">Saldo Principal:</span>
-                              <span className="font-medium text-green-600">{formatValue(cardData.saldo_principal)} MZN</span>
+                              <span className="font-medium text-green-600">{hideBalance ? '••••••' : `${formatValue(cardData.saldo_principal)} MZN`}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">Saldo Congelado:</span>
@@ -424,29 +475,71 @@ export default function WalletPage() {
                       </div>
                     ) : (
                       <div className="space-y-2 sm:space-y-3">
-                        {transactions.map((transaction) => (
-                          <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                              <div className={`p-1.5 sm:p-2 rounded-lg ${transaction.tipo === 'entrada' ? 'bg-green-100' : 'bg-red-100'}`}>
-                                {transaction.tipo === 'entrada' ? (
-                                  <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                                ) : (
-                                  <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                        {transactions.map((transaction) => {
+                          const isEntrada = transaction.tipo === 'entrada';
+                          const counterparty = transaction?.msisdn || (isEntrada ? 'Origem' : 'Destino');
+                          const directionText = isEntrada ? `De: ${counterparty}` : `Para: ${counterparty}`;
+                          const actionText = transaction?.accao ? ` • ${transaction.accao}` : '';
+
+                          // Map internal status to PayPal webhook-like labels for withdrawals
+                          let payoutBadge = null;
+                          if (!isEntrada) {
+                            const st = (transaction.status || '').toLowerCase();
+                            let label = 'PAYOUT PROCESSING';
+                            let cls = 'bg-amber-100 text-amber-700 border-amber-200';
+                            if (st === 'sucesso') {
+                              label = 'PAYMENT.PAYOUTS-ITEM.SUCCEEDED';
+                              cls = 'bg-green-100 text-green-700 border-green-200';
+                            } else if (st.startsWith('erro')) {
+                              label = 'PAYMENT.PAYOUTS-ITEM.FAILED';
+                              cls = 'bg-red-100 text-red-700 border-red-200';
+                            }
+                            payoutBadge = (
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`inline-block px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium ${cls}`}>
+                                  {label}
+                                </span>
+                                {(st === 'processando' || st.startsWith('processando:')) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => reconcilePayout(transaction.referencia)}
+                                    className="text-[10px] sm:text-xs px-2 py-0.5 border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+                                  >
+                                    Atualizar status
+                                  </button>
                                 )}
                               </div>
-                              <div>
-                                <p className="font-medium text-sm sm:text-base">{transaction.referencia}</p>
-                                <div className="flex items-center text-xs sm:text-sm text-gray-500">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {formatDate(transaction.data_hora)}
+                            );
+                          }
+
+                          return (
+                            <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <div className={`p-1.5 sm:p-2 rounded-lg ${isEntrada ? 'bg-green-100' : 'bg-red-100'}`}>
+                                  {isEntrada ? (
+                                    <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                                  ) : (
+                                    <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-sm sm:text-base">{transaction.referencia}</p>
+                                  <div className="text-xs sm:text-sm text-gray-600">
+                                    {directionText}{actionText}
+                                  </div>
+                                  {payoutBadge}
+                                  <div className="flex items-center text-[11px] sm:text-xs text-gray-500 mt-0.5">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {formatDate(transaction.data_hora)}
+                                  </div>
                                 </div>
                               </div>
+                              <span className={`font-medium text-sm sm:text-base ${isEntrada ? 'text-green-600' : 'text-red-600'}`}>
+                                {isEntrada ? '+' : '-'}{formatValue(transaction.valor)} MZN
+                              </span>
                             </div>
-                            <span className={`font-medium text-sm sm:text-base ${transaction.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'}`}>
-                              {transaction.tipo === 'entrada' ? '+' : '-'}{formatValue(transaction.valor)} MZN
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
