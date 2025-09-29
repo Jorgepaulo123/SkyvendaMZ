@@ -1,0 +1,43 @@
+/* Desktop-specific styles for ProductCardDesktop
+   This file is required by ProductCardDesktop.jsx to resolve during build.
+   Add or adjust styles as needed for the desktop product card layout. */
+
+.product-card-desktop {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.product-card-desktop .image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* square */
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f3f4f6;
+}
+
+.product-card-desktop .image-wrapper img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-card-desktop .details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-card-desktop .title {
+  font-weight: 600;
+  color: #111827;
+}
+
+.product-card-desktop .price {
+  color: #16a34a;
+  font-weight: 600;
+}
