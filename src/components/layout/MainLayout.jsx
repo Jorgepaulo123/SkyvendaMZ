@@ -32,8 +32,8 @@ export default function MainLayout({ children }) {
         <Header2 />
       </div>
 
-      {/* Área de conteúdo com scroll - compensando altura dos headers */}
-      <div className="flex-1 pt-[150px]">
+      {/* Área de conteúdo com scroll - sem padding para colar ao header */}
+      <div className="flex-1">
         {children}
       </div>
     </div>

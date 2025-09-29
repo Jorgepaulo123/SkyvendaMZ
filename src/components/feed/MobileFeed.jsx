@@ -173,7 +173,7 @@ export default function MobileFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white">
+    <div className="bg-white pt-[150px]">
       <NewPostInput />
       <div className="px-4 pb-3">
         <BannerSlider />
@@ -216,7 +216,7 @@ export default function MobileFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 -mt-[150px]">
+    <div className="min-h-screen bg-gray-50">
       {/* Conteúdo do feed - Estilo rede social mobile */}
       <div className="max-w-md mx-auto bg-white min-h-screen">
         {/* Header do feed */}

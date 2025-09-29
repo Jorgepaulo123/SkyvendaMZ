@@ -173,7 +173,7 @@ export default function DesktopFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white">
+    <div className="bg-white pt-[150px]">
       <NewPostInput />
       <div className="px-6 pb-4">
         <BannerSlider />
@@ -222,7 +222,7 @@ export default function DesktopFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 -mt-[150px]">
+    <div className="min-h-screen bg-gray-50">
       {/* Layout desktop com mais largura */}
       <div className="max-w-4xl mx-auto bg-white min-h-screen">
         {/* Header do feed */}
