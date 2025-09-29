@@ -30,14 +30,22 @@ export default function NewPostInput() {
       <div className="flex items-center space-x-3">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <img
-            src={user?.avatar || '/assets/images/default-avatar.png'}
-            alt="Avatar"
-            className="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover border-2 border-gray-100"
-            onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/40x40?text=U';
-            }}
-          />
+          {isAuthenticated && user?.perfil ? (
+            <img
+              src={`https://skyvendamz.up.railway.app/perfil/${user.perfil}`}
+              alt="Avatar"
+              className="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover border-2 border-gray-100"
+              onError={(e) => {
+                e.target.src = `https://ui-avatars.com/api/?name=${user.name || 'U'}&background=6366f1&color=fff`;
+              }}
+            />
+          ) : (
+            <div className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white">
+              <span className="text-sm font-medium">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Input */}
