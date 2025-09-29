@@ -173,7 +173,7 @@ export default function DesktopFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white pt-[150px]">
+    <div className="bg-white pt-[130px]">
       <NewPostInput />
       <div className="px-6 pb-4">
         <BannerSlider />
