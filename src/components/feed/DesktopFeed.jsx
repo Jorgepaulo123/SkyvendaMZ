@@ -1,13 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import api from '../../api/api';
-import ProductCard from './items/ProductCard';
-import PostCard from './items/PostCard';
+import ProductCardDesktop from './items/ProductCardDesktop';
+import PostCardDesktop from './items/PostCardDesktop';
 import AdCard from './items/AdCard';
 import FriendSuggestionCard from './items/FriendSuggestionCard';
 import NewPostInput from './NewPostInput';
 import BannerSlider from '../ads/BannerSlider';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import './feed-desktop.css';
 
 const DEBUG = true;
 const FEED_TYPES = {
@@ -17,10 +18,10 @@ const FEED_TYPES = {
   FRIEND_SUGGESTION: 'friend_suggestion'
 };
 
-export default function MobileFeed() {
+export default function DesktopFeed() {
   // Função para buscar dados da API
   const fetchFeedData = useCallback(async ({ cursor, isRefresh, signal }) => {
-    const limit = 8; // Menos itens por página para mobile para melhor performance
+    const limit = 12; // Mais itens para desktop
     const offset = isRefresh ? 0 : (parseInt(cursor) - 1) * limit;
     
     try {
@@ -51,8 +52,8 @@ export default function MobileFeed() {
           }
         });
         
-        // A cada 3 produtos, adicionar conteúdo especial
-        if ((index + 1) % 3 === 0) {
+        // A cada 4 produtos, adicionar conteúdo especial
+        if ((index + 1) % 4 === 0) {
           const rand = Math.random();
           
           if (rand < 0.2) {
@@ -141,7 +142,7 @@ export default function MobileFeed() {
   // Intersection Observer para detectar fim da lista
   const { ref: loadMoreRef, inView } = useInView({ 
     threshold: 0,
-    rootMargin: '300px' // Mais margem para mobile
+    rootMargin: '200px'
   });
 
   // Carregar mais quando chegar ao fim
@@ -155,10 +156,10 @@ export default function MobileFeed() {
   const renderFeedItem = useCallback((item) => {
     switch (item.type) {
       case FEED_TYPES.PRODUCT:
-        return <ProductCard key={item.id} data={item.data} />;
+        return <ProductCardDesktop key={item.id} data={item.data} />;
       
       case FEED_TYPES.POST:
-        return <PostCard key={item.id} data={item.data} />;
+        return <PostCardDesktop key={item.id} data={item.data} />;
       
       case FEED_TYPES.AD:
         return <AdCard key={item.id} data={item.data} />;
@@ -173,9 +174,9 @@ export default function MobileFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white">
+    <div className="bg-white border-b border-gray-200">
       <NewPostInput />
-      <div className="px-4 pb-3">
+      <div className="px-6 pb-4">
         <BannerSlider />
       </div>
     </div>
@@ -183,98 +184,108 @@ export default function MobileFeed() {
 
   // Componentes auxiliares
   const LoadingComponent = () => (
-    <div className="flex justify-center py-8">
-      <div className="flex items-center space-x-2">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
-        <span className="text-gray-600">Carregando...</span>
+    <div className="flex justify-center py-12">
+      <div className="flex items-center space-x-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <span className="text-gray-600 text-lg">Carregando feed...</span>
       </div>
     </div>
   );
 
   const ErrorComponent = () => (
-    <div className="text-center py-8 px-4">
-      <p className="text-red-500 mb-4">{error}</p>
-      <button 
-        onClick={refresh}
-        className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-      >
-        Tentar novamente
-      </button>
+    <div className="text-center py-12 px-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <p className="text-red-600 text-lg mb-4">{error}</p>
+        <button 
+          onClick={refresh}
+          className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+        >
+          Tentar novamente
+        </button>
+      </div>
     </div>
   );
 
   const EmptyComponent = () => (
-    <div className="text-center py-12 px-4">
-      <p className="text-gray-500 mb-4">Nenhum produto encontrado</p>
-      <button 
-        onClick={refresh}
-        className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-      >
-        Recarregar
-      </button>
+    <div className="text-center py-16 px-6">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
+        <div className="text-6xl mb-4">📦</div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+        <p className="text-gray-600 mb-6">Parece que não há produtos para mostrar no momento.</p>
+        <button 
+          onClick={refresh}
+          className="px-6 py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium"
+        >
+          Recarregar feed
+        </button>
+      </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Conteúdo do feed - Estilo rede social mobile */}
-      <div className="max-w-md mx-auto bg-white min-h-screen">
+      {/* Layout estilo Instagram para desktop */}
+      <div className="feed-desktop-container mx-auto min-h-screen">
         {/* Header do feed */}
         {FeedHeader}
         
-        <div className="pb-20">
-        {loading && items.length === 0 ? (
-          <LoadingComponent />
-        ) : error && items.length === 0 ? (
-          <ErrorComponent />
-        ) : items.length === 0 ? (
-          <EmptyComponent />
-        ) : (
-          <>
-            {/* Items do feed */}
-            {items.map(renderFeedItem).filter(Boolean)}
-            
-            {/* Trigger para infinite scroll */}
-            {hasMore && (
-              <div ref={loadMoreRef} className="h-1" />
-            )}
-            
-            {/* Loading indicator para mais itens */}
-            {loadingMore && (
-              <div className="flex justify-center py-4">
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
-                  <span className="text-gray-500 text-sm">Carregando mais...</span>
-                </div>
+        {/* Conteúdo principal do feed */}
+        <div className="pb-8">
+          {loading && items.length === 0 ? (
+            <LoadingComponent />
+          ) : error && items.length === 0 ? (
+            <ErrorComponent />
+          ) : items.length === 0 ? (
+            <EmptyComponent />
+          ) : (
+            <>
+              {/* Items do feed */}
+              <div className="space-y-6">
+                {items.map(renderFeedItem).filter(Boolean)}
               </div>
-            )}
-            
-            {/* Mensagem de fim */}
-            {!hasMore && items.length > 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <div className="flex flex-col items-center space-y-3">
-                  <span className="text-lg">🎉 Você chegou ao fim!</span>
-                  <p className="text-sm">Explore mais produtos ou comece novamente</p>
-                  <button 
-                    onClick={restart}
-                    className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 transition-colors font-medium"
-                  >
-                    Recomeçar do início
-                  </button>
+              
+              {/* Trigger para infinite scroll */}
+              {hasMore && (
+                <div ref={loadMoreRef} className="h-1" />
+              )}
+              
+              {/* Loading indicator para mais itens */}
+              {loadingMore && (
+                <div className="flex justify-center py-8">
+                  <div className="flex items-center space-x-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
+                    <span className="text-gray-500">Carregando mais posts...</span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+              
+              {/* Mensagem de fim */}
+              {!hasMore && items.length > 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="text-4xl">🎉</div>
+                    <h3 className="text-xl font-semibold">Você chegou ao fim!</h3>
+                    <p className="text-gray-600">Não há mais posts para mostrar no momento.</p>
+                    <button 
+                      onClick={restart}
+                      className="px-6 py-3 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors font-medium"
+                    >
+                      Ver posts mais recentes
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      {/* Pull to refresh indicator - apenas visual para web */}
+      {/* Pull to refresh indicator */}
       {refreshing && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 z-50">
-          <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
-            <span className="text-sm text-gray-600">Atualizando...</span>
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-6 py-3 z-50">
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
+            <span className="text-gray-600 font-medium">Atualizando feed...</span>
           </div>
         </div>
       )}

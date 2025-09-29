@@ -26,14 +26,14 @@ export default function NewPostInput() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-4">
-      <div className="flex items-center space-x-4">
+    <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 sticky top-0 z-10">
+      <div className="flex items-center space-x-3">
         {/* Avatar */}
         <div className="flex-shrink-0">
           <img
             src={user?.avatar || '/assets/images/default-avatar.png'}
             alt="Avatar"
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 md:w-8 md:h-8 rounded-full object-cover border-2 border-gray-100"
             onError={(e) => {
               e.target.src = 'https://via.placeholder.com/40x40?text=U';
             }}
@@ -43,9 +43,9 @@ export default function NewPostInput() {
         {/* Input */}
         <button
           onClick={handlePostClick}
-          className="flex-1 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-4 py-3 text-left"
+          className="new-post-input-mobile md:new-post-input-desktop flex-1 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-4 py-3 text-left"
         >
-          <span className="text-gray-600">
+          <span className="text-gray-600 text-sm">
             {isAuthenticated ? 'Poste uma novidade...' : 'Entre para postar'}
           </span>
         </button>
@@ -53,16 +53,15 @@ export default function NewPostInput() {
         {/* Photo Button */}
         <button
           onClick={handlePhotoClick}
-          className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="action-button-mobile md:action-button-desktop flex items-center justify-center p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <Camera size={20} className="text-gray-600 mb-1" />
-          <span className="text-xs text-gray-600">Foto</span>
+          <Camera size={22} className="text-gray-600" />
         </button>
 
-        {/* Post Button - Mobile */}
+        {/* Post Button */}
         <button
           onClick={handlePostClick}
-          className="md:hidden bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-full transition-colors"
+          className="action-button-mobile md:header-button-desktop bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-full transition-colors"
         >
           <Plus size={20} />
         </button>

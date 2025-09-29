@@ -8,6 +8,7 @@ import FriendSuggestionCard from './items/FriendSuggestionCard';
 import NewPostInput from './NewPostInput';
 import BannerSlider from '../ads/BannerSlider';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import './feed-mobile.css';
 
 const DEBUG = true;
 const FEED_TYPES = {
@@ -17,10 +18,10 @@ const FEED_TYPES = {
   FRIEND_SUGGESTION: 'friend_suggestion'
 };
 
-export default function MobileFeed() {
+export default function ResponsiveFeed() {
   // Função para buscar dados da API
   const fetchFeedData = useCallback(async ({ cursor, isRefresh, signal }) => {
-    const limit = 8; // Menos itens por página para mobile para melhor performance
+    const limit = 10;
     const offset = isRefresh ? 0 : (parseInt(cursor) - 1) * limit;
     
     try {
@@ -141,7 +142,7 @@ export default function MobileFeed() {
   // Intersection Observer para detectar fim da lista
   const { ref: loadMoreRef, inView } = useInView({ 
     threshold: 0,
-    rootMargin: '300px' // Mais margem para mobile
+    rootMargin: '300px'
   });
 
   // Carregar mais quando chegar ao fim
@@ -217,8 +218,8 @@ export default function MobileFeed() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Conteúdo do feed - Estilo rede social mobile */}
-      <div className="max-w-md mx-auto bg-white min-h-screen">
+      {/* Conteúdo do feed - Responsivo */}
+      <div className="feed-mobile-container md:max-w-2xl lg:max-w-4xl mx-auto min-h-screen">
         {/* Header do feed */}
         {FeedHeader}
         
@@ -269,9 +270,9 @@ export default function MobileFeed() {
         </div>
       </div>
 
-      {/* Pull to refresh indicator - apenas visual para web */}
+      {/* Pull to refresh indicator */}
       {refreshing && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 z-50">
+        <div className="pull-to-refresh-mobile fixed top-20 left-1/2 transform -translate-x-1/2 rounded-full px-4 py-2 z-50">
           <div className="flex items-center space-x-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
             <span className="text-sm text-gray-600">Atualizando...</span>
