@@ -74,22 +74,6 @@ export default function WalletPage() {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       };
-
-  const reconcilePayout = async (referencia) => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Sessão expirada. Faça login.');
-      await api.post('/paypal/payouts/reconcile', null, {
-        params: { referencia },
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success('Status atualizado.');
-      await loadData();
-    } catch (err) {
-      const msg = err?.response?.data?.detail || err?.message || 'Falha ao atualizar status.';
-      toast.error(String(msg));
-    }
-  };
       
       try {
         // Requisição para obter transações
@@ -141,6 +125,22 @@ export default function WalletPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const reconcilePayout = async (referencia) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Sessão expirada. Faça login.');
+      await api.post('/paypal/payouts/reconcile', null, {
+        params: { referencia },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Status atualizado.');
+      await loadData();
+    } catch (err) {
+      const msg = err?.response?.data?.detail || err?.message || 'Falha ao atualizar status.';
+      toast.error(String(msg));
     }
   };
 
