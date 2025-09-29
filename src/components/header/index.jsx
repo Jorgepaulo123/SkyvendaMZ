@@ -24,27 +24,18 @@ export default function Header() {
     const safeCount = (!notificationCount || isNaN(notificationCount) || notificationCount < 0) ? 0 : notificationCount;
     
     const {isAuthenticated}=useAuth()
-    // Controle de ocultar ao rolar
-    const [hideOnScroll, setHideOnScroll] = useState(false);
-    const lastYRef = useRef(0);
-    useEffect(() => {
-        const onScroll = () => {
-            const y = window.scrollY || 0;
-            const isDown = y > lastYRef.current;
-            const threshold = 80;
-            setHideOnScroll(isDown && y > threshold);
-            lastYRef.current = y;
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
+    // Header agora é completamente fixo no topo - sem scroll
+    const headerRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const isActiveRoute = (path) => location.pathname === path;
     return (
         <>
             {/* header desktop */}
-            <div className={`w-full py-3 sticky top-0 bg-white hidden md:block max_z_index_xl shadow-sm transform transition-transform duration-300 ${hideOnScroll ? '-translate-y-full' : 'translate-y-0'}`}>
+            <div 
+                ref={headerRef}
+                className="w-full py-3 fixed top-0 left-0 right-0 bg-white hidden md:block max_z_index_xl shadow-sm"
+            >
                 <div className="container mx-auto flex justify-between">
                     <Link to={'/'} className="flex items-center gap-2 lg:min-w-[300px] ">
                         <FaShopify className='text-[#7a4fed]' size={40} />
@@ -138,7 +129,9 @@ export default function Header() {
             </div>
 
             {/* Mobile Header */}
-            <div className={`md:hidden max_z_index px-4 border-b  border-gray-300 shadow-sm sticky top-0 z-50 bg-gradient-to-r backdrop:blur-md from-pink-50 to-red-50 transform transition-transform duration-300 ${hideOnScroll ? '-translate-y-full' : 'translate-y-0'}`}>
+            <div 
+                className="md:hidden max_z_index px-4 border-b border-gray-300 shadow-sm fixed top-0 left-0 right-0 z-50 bg-gradient-to-r backdrop:blur-md from-pink-50 to-red-50"
+            >
                 {/* Top Row */}
                 <div className="flex justify-between items-center py-4">
                     <Link

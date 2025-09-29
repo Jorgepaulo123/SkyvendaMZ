@@ -108,7 +108,7 @@ function App() {
                   <Route path="/termos" element={<Terms/>} />
                    
                   {/* Public Routes */}
-                  <Route path="/" element={<Layout><Home/></Layout>} />
+                  <Route path="/" element={<Home/>} />
                   <Route path="/search" element={<Layout><Search /></Layout>} />
                   <Route path="/reels" element={<Layout header={false}><ReelsPage/></Layout>} />
                   <Route path="/post/:slug" element={<Layout><ProductPage /></Layout>} />
