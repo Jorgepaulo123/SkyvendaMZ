@@ -481,10 +481,12 @@ export default function WalletPage() {
                           const directionText = isEntrada ? `De: ${counterparty}` : `Para: ${counterparty}`;
                           const actionText = transaction?.accao ? ` • ${transaction.accao}` : '';
 
-                          // Map internal status to PayPal webhook-like labels for withdrawals
-                          let payoutBadge = null;
+                          // Map internal status to PayPal webhook-like labels for all transactions
+                          let statusBadge = null;
+                          const st = (transaction.status || '').toLowerCase();
+                          
                           if (!isEntrada) {
-                            const st = (transaction.status || '').toLowerCase();
+                            // For withdrawals (saídas), show PayPal payout status
                             let label = 'PAYOUT PROCESSING';
                             let cls = 'bg-amber-100 text-amber-700 border-amber-200';
                             if (st === 'sucesso') {
@@ -494,7 +496,7 @@ export default function WalletPage() {
                               label = 'PAYMENT.PAYOUTS-ITEM.FAILED';
                               cls = 'bg-red-100 text-red-700 border-red-200';
                             }
-                            payoutBadge = (
+                            statusBadge = (
                               <div className="flex items-center gap-2 mt-1">
                                 <span className={`inline-block px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium ${cls}`}>
                                   {label}
@@ -510,6 +512,21 @@ export default function WalletPage() {
                                 )}
                               </div>
                             );
+                          } else {
+                            // For deposits (entradas), show PayPal capture status
+                            if (st === 'sucesso') {
+                              statusBadge = (
+                                <span className="inline-block mt-1 px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium bg-green-100 text-green-700 border-green-200">
+                                  PAYMENT.CAPTURE.COMPLETED
+                                </span>
+                              );
+                            } else if (st.startsWith('erro')) {
+                              statusBadge = (
+                                <span className="inline-block mt-1 px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium bg-red-100 text-red-700 border-red-200">
+                                  PAYMENT.CAPTURE.FAILED
+                                </span>
+                              );
+                            }
                           }
 
                           return (
@@ -527,7 +544,7 @@ export default function WalletPage() {
                                   <div className="text-xs sm:text-sm text-gray-600">
                                     {directionText}{actionText}
                                   </div>
-                                  {payoutBadge}
+                                  {statusBadge}
                                   <div className="flex items-center text-[11px] sm:text-xs text-gray-500 mt-0.5">
                                     <Clock className="w-3 h-3 mr-1" />
                                     {formatDate(transaction.data_hora)}
