@@ -217,7 +217,7 @@ export default function ResponsiveFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 -mt-[150px]">
       {/* Conteúdo do feed - Responsivo */}
       <div className="feed-mobile-container md:max-w-2xl lg:max-w-4xl mx-auto min-h-screen">
         {/* Header do feed */}

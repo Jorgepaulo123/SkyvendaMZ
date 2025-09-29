@@ -216,7 +216,7 @@ export default function MobileFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 -mt-[150px]">
       {/* Conteúdo do feed - Estilo rede social mobile */}
       <div className="max-w-md mx-auto bg-white min-h-screen">
         {/* Header do feed */}

@@ -8,7 +8,6 @@ import FriendSuggestionCard from './items/FriendSuggestionCard';
 import NewPostInput from './NewPostInput';
 import BannerSlider from '../ads/BannerSlider';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
-import './feed-desktop.css';
 
 const DEBUG = true;
 const FEED_TYPES = {
@@ -174,7 +173,7 @@ export default function DesktopFeed() {
 
   // Header do feed
   const FeedHeader = useMemo(() => (
-    <div className="bg-white border-b border-gray-200">
+    <div className="bg-white">
       <NewPostInput />
       <div className="px-6 pb-4">
         <BannerSlider />
@@ -223,9 +222,9 @@ export default function DesktopFeed() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Layout estilo Instagram para desktop */}
-      <div className="feed-desktop-container mx-auto min-h-screen">
+    <div className="min-h-screen bg-gray-50 -mt-[150px]">
+      {/* Layout desktop com mais largura */}
+      <div className="max-w-4xl mx-auto bg-white min-h-screen">
         {/* Header do feed */}
         {FeedHeader}
         
@@ -240,7 +239,7 @@ export default function DesktopFeed() {
           ) : (
             <>
               {/* Items do feed */}
-              <div className="space-y-6">
+              <div className="space-y-4 px-4">
                 {items.map(renderFeedItem).filter(Boolean)}
               </div>
               

@@ -26,7 +26,7 @@ export default function NewPostInput() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 sticky top-0 z-10">
+    <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 sticky top-[150px] z-10">
       <div className="flex items-center space-x-3">
         {/* Avatar */}
         <div className="flex-shrink-0">
