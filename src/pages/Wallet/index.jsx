@@ -74,6 +74,22 @@ export default function WalletPage() {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       };
+
+  const reconcilePayout = async (referencia) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Sessão expirada. Faça login.');
+      await api.post('/paypal/payouts/reconcile', null, {
+        params: { referencia },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Status atualizado.');
+      await loadData();
+    } catch (err) {
+      const msg = err?.response?.data?.detail || err?.message || 'Falha ao atualizar status.';
+      toast.error(String(msg));
+    }
+  };
       
       try {
         // Requisição para obter transações
@@ -479,9 +495,20 @@ export default function WalletPage() {
                               cls = 'bg-red-100 text-red-700 border-red-200';
                             }
                             payoutBadge = (
-                              <span className={`inline-block mt-1 px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium ${cls}`}>
-                                {label}
-                              </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`inline-block px-2 py-0.5 border rounded text-[10px] sm:text-xs font-medium ${cls}`}>
+                                  {label}
+                                </span>
+                                {(st === 'processando' || st.startsWith('processando:')) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => reconcilePayout(transaction.referencia)}
+                                    className="text-[10px] sm:text-xs px-2 py-0.5 border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+                                  >
+                                    Atualizar status
+                                  </button>
+                                )}
+                              </div>
                             );
                           }
 
