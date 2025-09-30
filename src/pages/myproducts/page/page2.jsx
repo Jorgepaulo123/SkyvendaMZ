@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORIES,SUBCATEGORIES } from '../../../data/consts';
 import api from '../../../api/api';
-import { ArrowLeft, Pencil, ImageIcon, Loader } from 'lucide-react';
+import { ArrowLeft, Pencil, ImageIcon, Loader, Check } from 'lucide-react';
 import { HomeContext } from '../../../context/HomeContext';
 import { AdsColumn } from '../../../components/ads/ads_column';
 import { base_url } from '../../../data/consts';
@@ -27,7 +27,8 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
   const [saveLoading, setSaveLoading] = useState(false);
   const { toast } = useToast();
   const [isHovering, setIsHovering] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // editing image
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
   const {changeImage,addProducts,ads}=useContext(HomeContext)
@@ -35,6 +36,33 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
 
   const handleContentChange = (value) => {
     setContent(value);
+  };
+
+  const handleTogglePriceEdit = async () => {
+    // Toggle off -> save
+    if (isEditingPrice) {
+      const priceNum = price === '' ? null : Number(price);
+      if (priceNum === null || !Number.isFinite(priceNum) || priceNum < 0) {
+        toast({
+          title: 'Preço inválido',
+          description: 'Insira um número válido maior ou igual a 0.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      try {
+        await api.put(`/produtos/${selectedProduct?.slug}/preco`, { preco: priceNum }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast({ title: 'Preço atualizado', description: `Novo preço: ${priceNum}` });
+        setIsEditingPrice(false);
+      } catch (err) {
+        toast({ title: 'Erro ao atualizar preço', description: err?.userMessage || 'Tente novamente.', variant: 'destructive' });
+      }
+      return;
+    }
+    // Toggle on -> enable editing
+    setIsEditingPrice(true);
   };
 
   useEffect(() => {
@@ -276,14 +304,26 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
               </div>
 
               <div>
-                <Label htmlFor="price">Preço</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="price">Preço</Label>
+                  <button
+                    type="button"
+                    onClick={handleTogglePriceEdit}
+                    className="p-1 rounded hover:bg-gray-100"
+                    title={isEditingPrice ? 'Guardar preço' : 'Editar preço'}
+                  >
+                    {isEditingPrice ? <Check className="h-4 w-4 text-green-600"/> : <Pencil className="h-4 w-4" />}
+                  </button>
+                </div>
                 <Input
                   id="price"
                   type="number"
+                  step="0.01"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="0.00"
                   className="mt-1"
+                  readOnly={!isEditingPrice}
                 />
               </div>
 
