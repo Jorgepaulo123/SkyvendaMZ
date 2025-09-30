@@ -139,15 +139,26 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
 
   const handleSubmit = async () => {
     const formData = new FormData();
-    formData.append('nome', productName);
-    formData.append('preco', parseFloat(price));
-    formData.append('quantidade_estoque', parseInt(stock));
-    formData.append('estado', estado);
-    formData.append('disponiblidade', 'string');
-    formData.append('descricao', description);
-    formData.append('detalhes', content);
-    formData.append('tipo', type);
-    formData.append('categoria', category);
+    // Always send name and text fields
+    if (productName !== undefined && productName !== null) formData.append('nome', String(productName));
+    if (estado) formData.append('estado', String(estado));
+    if (description !== undefined && description !== null) formData.append('descricao', String(description));
+    if (content !== undefined && content !== null) formData.append('detalhes', String(content));
+    if (type) formData.append('tipo', String(type));
+    if (category) formData.append('categoria', String(category));
+    if (typeof selectedProduct?.disponiblidade === 'string') {
+      formData.append('disponiblidade', selectedProduct.disponiblidade);
+    }
+
+    // Only send numeric fields if user provided a finite number
+    const priceNum = price === '' ? null : Number(price);
+    if (priceNum !== null && Number.isFinite(priceNum)) {
+      formData.append('preco', String(priceNum));
+    }
+    const stockNum = stock === '' ? null : Number(parseInt(stock));
+    if (stockNum !== null && Number.isFinite(stockNum)) {
+      formData.append('quantidade_estoque', String(stockNum));
+    }
     setSaveLoading(true);
 
     try {
