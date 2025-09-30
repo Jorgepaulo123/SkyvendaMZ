@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
 import 'react-quill/dist/quill.snow.css';
 import ReactQuill from 'react-quill';
 
@@ -14,7 +13,6 @@ import { ArrowLeft, Pencil, ImageIcon, Loader } from 'lucide-react';
 import { HomeContext } from '../../../context/HomeContext';
 import { AdsColumn } from '../../../components/ads/ads_column';
 import { base_url } from '../../../data/consts';
-import axios from 'axios';
 
 
 export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
@@ -61,7 +59,6 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
       fileInputRef.current?.click();
     }
   };
-
   const handleImageSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -73,7 +70,7 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
       formData.append('capa', file);
 
       try {
-        const res = await axios.put(`http://127.0.0.1:8000/produtos/${selectedProduct?.slug}/capa`, formData, {
+        const res = await api.put(`/produtos/${selectedProduct?.slug}/capa`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -112,27 +109,23 @@ export function Page2({ selectedProduct, onBack, token,setSelectedProduct}) {
     formData.append('capa', selectedImage);
 
     try {
-      const res = await axios.put(`http://127.0.0.1:8000/produtos/${selectedProduct?.slug}/capa`, formData, {
+      const res = await api.put(`/produtos/${selectedProduct?.slug}/capa`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
-      }).then(res=>{
-        console.log(res.data)
-        console.log(res.data.capa)
-        changeImage(selectedProduct.slug, res.data.capa);
-        setSelectedProduct({
-          ...selectedProduct,
-          thumb: res.data.capa
-        });
-    
+      });
+      
+      changeImage(selectedProduct.slug, res.data.capa);
+      setSelectedProduct({
+        ...selectedProduct,
+        thumb: res.data.capa
       });
 
       toast({
         title: "Imagem atualizada com sucesso!",
         description: "A nova imagem foi salva.",
       });
-
       setIsEditing(false);
       setSelectedImage(null);
     } catch (error) {
